@@ -1,0 +1,74 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME:-Laravel}
+        APP_ENV: ${APP_ENV:-local}
+    image: ${APP_IMAGE:-${COMPOSE_PROJECT_NAME:-app}}:latest
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${APP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+
+  db:
+    image: ${DB_IMAGE:-mysql:8.0}
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-app}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  redis:
+    image: ${REDIS_IMAGE:-redis:alpine}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  queue:
+    image: ${APP_IMAGE:-${COMPOSE_PROJECT_NAME:-app}}:latest
+    command: ${QUEUE_WORKER_COMMAND:-php artisan queue:work}
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    env_file:
+      - .env
+    depends_on:
+      app:
+        condition: service_started
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  db_data:
+    name: ${DB_VOLUME_NAME:-${COMPOSE_PROJECT_NAME:-app}_db_data}
