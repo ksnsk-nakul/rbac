@@ -196,7 +196,7 @@ Set these in `.env`.
 | `DB_PASSWORD` | MySQL app user password. | `secret` |
 | `DB_VOLUME_NAME` | Override persistent DB volume name. | `rbac_db_data` |
 | `REDIS_IMAGE` | Redis image/tag. | `redis:alpine` |
-| `QUEUE_WORKER_COMMAND` | Queue process command in queue container. | `php artisan queue:work` |
+| `QUEUE_WORKER_COMMAND` | Queue process command in queue container (quote if value has spaces). | `"php artisan queue:work"` |
 
 Laravel app variables still come from `.env` (`APP_ENV`, `APP_KEY`, `APP_URL`, `REDIS_HOST`, etc.).
 

@@ -54,6 +54,12 @@ services:
       start_period: 5s
 
   queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+      args:
+        APP_NAME: ${APP_NAME:-Laravel}
+        APP_ENV: ${APP_ENV:-local}
     image: ${APP_IMAGE:-${COMPOSE_PROJECT_NAME:-app}}:latest
     command: ${QUEUE_WORKER_COMMAND:-php artisan queue:work}
     working_dir: /var/www
