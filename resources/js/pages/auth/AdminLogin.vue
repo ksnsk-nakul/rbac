@@ -1,40 +1,28 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { register } from '@/routes';
+import AuthSplitLayout from '@/layouts/auth/AuthSplitLayout.vue';
 import { store } from '@/routes/login';
-import { request } from '@/routes/password';
 
-defineProps<{
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
+const props = defineProps<{
+    role?: 'admin' | 'subadmin';
 }>();
 
-const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
+const tone = 'bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100';
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+    <AuthSplitLayout
+        title="Admin Login"
+        description="Manage users, subadmins, and permissions."
         :tone="tone"
     >
-        <Head title="Log in" />
-
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            {{ status }}
-        </div>
+        <Head title="Admin Login" />
 
         <Form
             v-bind="store.form()"
@@ -42,7 +30,7 @@ const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <input type="hidden" name="intended_role" value="user" />
+            <input type="hidden" name="intended_role" :value="props.role ?? 'admin'" />
             <div class="grid gap-6">
                 <div class="grid gap-2">
                     <Label for="email">Email address</Label>
@@ -62,14 +50,6 @@ const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
                         <Label for="password">Password</Label>
-                        <TextLink
-                            v-if="canResetPassword"
-                            :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
-                        >
-                            Forgot password?
-                        </TextLink>
                     </div>
                     <Input
                         id="password"
@@ -92,23 +72,15 @@ const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="mt-2 w-full"
                     :tabindex="4"
                     :disabled="processing"
                     data-test="login-button"
                 >
                     <Spinner v-if="processing" />
-                    Log in
+                    Login
                 </Button>
             </div>
-
-            <div
-                class="text-center text-sm text-muted-foreground"
-                v-if="canRegister"
-            >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
         </Form>
-    </AuthBase>
+    </AuthSplitLayout>
 </template>

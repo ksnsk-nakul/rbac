@@ -7,8 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { register } from '@/routes';
+import AuthSplitLayout from '@/layouts/auth/AuthSplitLayout.vue';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -18,22 +17,33 @@ defineProps<{
     canRegister: boolean;
 }>();
 
-const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
+const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+    <AuthSplitLayout
+        title="User Login"
+        description="Access your account and dashboard."
         :tone="tone"
     >
-        <Head title="Log in" />
+        <Head title="User Login" />
 
-        <div
-            v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
+        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
             {{ status }}
+        </div>
+
+        <div class="mb-4 grid grid-cols-2 overflow-hidden rounded-full bg-muted text-sm">
+            <button class="bg-orange-500 px-4 py-2 font-medium text-white">
+                Login
+            </button>
+            <a
+                v-if="canRegister"
+                href="/user/register"
+                class="px-4 py-2 text-center text-muted-foreground hover:text-foreground"
+            >
+                Register
+            </a>
+            <span v-else class="px-4 py-2 text-center text-muted-foreground">Register</span>
         </div>
 
         <Form
@@ -65,8 +75,7 @@ const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
                         <TextLink
                             v-if="canResetPassword"
                             :href="request()"
-                            class="text-sm"
-                            :tabindex="5"
+                            class="text-sm text-orange-600 hover:underline"
                         >
                             Forgot password?
                         </TextLink>
@@ -92,23 +101,20 @@ const tone = 'bg-emerald-50 dark:bg-emerald-950/30';
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="mt-2 w-full bg-orange-500 text-white hover:bg-orange-600"
                     :tabindex="4"
                     :disabled="processing"
                     data-test="login-button"
                 >
                     <Spinner v-if="processing" />
-                    Log in
+                    Login
                 </Button>
             </div>
-
-            <div
-                class="text-center text-sm text-muted-foreground"
-                v-if="canRegister"
-            >
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-            </div>
         </Form>
-    </AuthBase>
+
+        <div class="mt-6 text-center text-sm text-muted-foreground">
+            Are you an administrator?
+            <a href="/admin/login" class="text-orange-600 hover:underline">I am admin</a>
+        </div>
+    </AuthSplitLayout>
 </template>

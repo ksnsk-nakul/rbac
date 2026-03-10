@@ -1,24 +1,35 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { login } from '@/routes';
+import AuthSplitLayout from '@/layouts/auth/AuthSplitLayout.vue';
 import { store } from '@/routes/register';
-const tone = 'bg-amber-50 dark:bg-amber-950/30';
+
+const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
 </script>
 
 <template>
-    <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
+    <AuthSplitLayout
+        title="Create User Account"
+        description="Join to access the user dashboard."
         :tone="tone"
     >
-        <Head title="Register" />
+        <Head title="User Register" />
+
+        <div class="mb-4 grid grid-cols-2 overflow-hidden rounded-full bg-muted text-sm">
+            <a
+                href="/user/login"
+                class="px-4 py-2 text-center text-muted-foreground hover:text-foreground"
+            >
+                Login
+            </a>
+            <button class="bg-orange-500 px-4 py-2 font-medium text-white">
+                Register
+            </button>
+        </div>
 
         <Form
             v-bind="store.form()"
@@ -26,9 +37,8 @@ const tone = 'bg-amber-50 dark:bg-amber-950/30';
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
+            <input type="hidden" name="role" value="user" />
             <div class="grid gap-6">
-                <input type="hidden" name="role" value="user" />
-
                 <div class="grid gap-2">
                     <Label for="name">Name</Label>
                     <Input
@@ -88,7 +98,7 @@ const tone = 'bg-amber-50 dark:bg-amber-950/30';
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full"
+                    class="mt-2 w-full bg-orange-500 text-white hover:bg-orange-600"
                     tabindex="5"
                     :disabled="processing"
                     data-test="register-user-button"
@@ -97,16 +107,6 @@ const tone = 'bg-amber-50 dark:bg-amber-950/30';
                     Create account
                 </Button>
             </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink
-                    :href="login()"
-                    class="underline underline-offset-4"
-                    :tabindex="6"
-                    >Log in</TextLink
-                >
-            </div>
         </Form>
-    </AuthBase>
+    </AuthSplitLayout>
 </template>

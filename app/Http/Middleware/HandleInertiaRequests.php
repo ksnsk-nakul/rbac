@@ -35,13 +35,41 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $demoCredentials = null;
+        $user = $request->user()?->loadMissing('role.permissions');
+        $permissions = [];
+
+        if ($user) {
+            $permissions = $user->isAdmin()
+                ? ['*']
+                : ($user->role?->permissions?->pluck('slug')->all() ?? []);
+        }
+
+        if (app()->environment(['local', 'development', 'dev'])) {
+            $demoCredentials = [
+                'admin' => [
+                    'email' => 'admin@admin.com',
+                    'password' => '1234567890',
+                ],
+                'subadmin' => [
+                    'email' => 'subadmin@admin.com',
+                    'password' => '1234567890',
+                ],
+            ];
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
+                'permissions' => $permissions,
             ],
+            'demoCredentials' => $demoCredentials,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+            ],
         ];
     }
 }
