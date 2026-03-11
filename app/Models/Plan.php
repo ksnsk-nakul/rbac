@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Plan extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'audit_retention_days',
+        'max_admin_users',
+        'allow_api_tokens',
+        'allow_ip_allowlist',
+        'allow_mfa_enforcement',
+    ];
+}

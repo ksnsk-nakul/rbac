@@ -15,6 +15,8 @@ type Role = {
     id: number;
     name: string;
     slug: string;
+    route: string;
+    is_default: boolean;
     permissions: Permission[];
 };
 
@@ -24,7 +26,9 @@ const props = defineProps<{
 }>();
 
 const page = usePage();
-const status = computed(() => (page.props.flash as { status?: string } | undefined)?.status);
+const status = computed(
+    () => (page.props.flash as { status?: string } | undefined)?.status,
+);
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -37,13 +41,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Roles & Permissions" />
         <div class="space-y-8 p-4">
-            <p v-if="status" class="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200">
+            <p
+                v-if="status"
+                class="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-200"
+            >
                 {{ status }}
             </p>
 
             <Heading
                 title="Roles & Permissions"
-                description="Create roles and assign permissions. Admins have full access by default."
+                description="Create roles, assign permissions, and pick the default login role."
             />
 
             <section class="space-y-4 rounded-lg border p-4">
@@ -56,33 +63,67 @@ const breadcrumbs: BreadcrumbItem[] = [
                 >
                     <div class="grid gap-2">
                         <Label for="name">Role name</Label>
-                        <Input id="name" name="name" required placeholder="Role name" />
+                        <Input
+                            id="name"
+                            name="name"
+                            required
+                            placeholder="Role name"
+                        />
                         <InputError :message="errors.name" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="slug">Role slug</Label>
-                        <Input id="slug" name="slug" required placeholder="role-slug" />
+                        <Input
+                            id="slug"
+                            name="slug"
+                            required
+                            placeholder="role-slug"
+                        />
                         <InputError :message="errors.slug" />
                     </div>
                     <div class="grid gap-2">
+                        <Label for="route">Login route</Label>
+                        <p class="text-xs text-muted-foreground">
+                            Example: login/{route} and register/{route}
+                        </p>
+                        <Input
+                            id="route"
+                            name="route"
+                            required
+                            placeholder="role"
+                        />
+                        <InputError :message="errors.route" />
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input
+                            id="is_default"
+                            name="is_default"
+                            type="checkbox"
+                            value="1"
+                        />
+                        <Label for="is_default">Set as default role</Label>
+                    </div>
+                    <div class="grid gap-2">
                         <Label>Permissions</Label>
-                        <div class="grid gap-2 sm:grid-cols-2">
+                        <div class="flex flex-wrap gap-2">
                             <label
                                 v-for="permission in props.permissions"
                                 :key="permission.id"
-                                class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                                class="flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
                             >
                                 <input
                                     type="checkbox"
                                     name="permissions[]"
                                     :value="permission.id"
                                 />
-                                <span>{{ permission.name }}</span>
+                                {{ permission.name }}
                             </label>
                         </div>
                         <InputError :message="errors.permissions" />
                     </div>
-                    <Button type="submit" :disabled="processing">Create role</Button>
+                    <Button type="submit" :disabled="processing"
+                        >Create role</Button
+                    >
                 </Form>
             </section>
 
@@ -106,14 +147,36 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <Input :name="`name`" :default-value="role.name" />
                                 <InputError :message="errors.name" />
                             </div>
-                            <div class="text-xs text-muted-foreground">Slug: {{ role.slug }}</div>
+                            <div class="grid gap-2">
+                                <Label>Role slug</Label>
+                                <Input :name="`slug`" :default-value="role.slug" />
+                                <InputError :message="errors.slug" />
+                            </div>
+                            <div class="grid gap-2">
+                                <Label>Login route</Label>
+                                <p class="text-xs text-muted-foreground">
+                                    Example: login/{route} and register/{route}
+                                </p>
+                                <Input :name="`route`" :default-value="role.route" />
+                                <InputError :message="errors.route" />
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input
+                                    :id="`is_default_${role.id}`"
+                                    name="is_default"
+                                    type="checkbox"
+                                    value="1"
+                                    :checked="role.is_default"
+                                />
+                                <Label :for="`is_default_${role.id}`">Default role</Label>
+                            </div>
                             <div class="grid gap-2">
                                 <Label>Permissions</Label>
-                                <div class="grid gap-2 sm:grid-cols-2">
+                                <div class="flex flex-wrap gap-2">
                                     <label
                                         v-for="permission in props.permissions"
                                         :key="permission.id"
-                                        class="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
+                                        class="flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
                                     >
                                         <input
                                             type="checkbox"
@@ -121,11 +184,26 @@ const breadcrumbs: BreadcrumbItem[] = [
                                             :value="permission.id"
                                             :checked="role.permissions.some((p) => p.id === permission.id)"
                                         />
-                                        <span>{{ permission.name }}</span>
+                                        {{ permission.name }}
                                     </label>
                                 </div>
+                                <InputError :message="errors.permissions" />
                             </div>
-                            <Button type="submit" :disabled="processing">Update role</Button>
+                            <div class="flex flex-wrap gap-2">
+                                <Button type="submit" :disabled="processing"
+                                    >Update role</Button
+                                >
+                            </div>
+                        </Form>
+                        <Form
+                            :action="`/admin/management/roles/${role.id}`"
+                            method="post"
+                            class="mt-3"
+                        >
+                            <input type="hidden" name="_method" value="delete" />
+                            <Button type="submit" variant="destructive" size="sm">
+                                Delete
+                            </Button>
                         </Form>
                     </div>
                 </div>

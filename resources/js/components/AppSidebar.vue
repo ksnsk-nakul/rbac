@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { LayoutGrid, Map, ShieldCheck, Users } from 'lucide-vue-next';
+import { Activity, LayoutGrid, Map, ShieldCheck, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -32,11 +32,7 @@ type PageProps = {
 const page = usePage<PageProps>();
 const permissions = computed(() => page.props.auth?.permissions ?? []);
 const roleSlug = computed(() => page.props.auth?.user?.role?.slug);
-const dashboardHref = computed(() =>
-    roleSlug.value === 'admin' || roleSlug.value === 'subadmin'
-        ? '/admin/dashboard'
-        : dashboard(),
-);
+const dashboardHref = computed(() => (roleSlug.value === 'super_admin' ? '/admin/dashboard' : dashboard()));
 const hasPermission = (permission: string) =>
     permissions.value.includes('*') || permissions.value.includes(permission);
 
@@ -48,34 +44,67 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: LayoutGrid,
         },
     ];
-    if (hasPermission('users.manage')) {
-        items.push(
-            {
-                title: 'Manage users',
-                href: '/admin/management/users',
-                icon: Users,
-            }
-        );
-    }
-    if (hasPermission('subadmins.manage')) {
+    if (hasPermission('accounts.view')) {
         items.push({
-            title: 'Manage subadmins',
-            href: '/admin/management/subadmins',
+            title: 'Manage users',
+            href: '/admin/management/users',
             icon: Users,
         });
     }
-    if (hasPermission('roles.manage')) {
+    if (hasPermission('roles.view')) {
         items.push({
             title: 'Roles & permissions',
             href: '/admin/management/roles',
             icon: ShieldCheck,
         });
     }
-    if (hasPermission('sitemap.view')) {
+    if (hasPermission('audit.view')) {
+        items.push({
+            title: 'My activity',
+            href: '/account/settings/activity',
+            icon: Activity,
+        });
+    }
+    if (hasPermission('audit.export')) {
+        items.push({
+            title: 'Activity (all)',
+            href: '/admin/activity',
+            icon: Activity,
+        });
+    }
+    if (hasPermission('security.sessions.view')) {
+        items.push({
+            title: 'Security',
+            href: '/admin/security',
+            icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('security.ip_allowlist.view')) {
+        items.push({
+            title: 'IP allowlist',
+            href: '/admin/security/allowlist',
+            icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('approvals.view')) {
+        items.push({
+            title: 'Approvals',
+            href: '/admin/approvals',
+            icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('system.settings.view')) {
         items.push({
             title: 'Sitemap',
             href: '/admin/management/sitemap',
             icon: Map,
+        });
+    }
+    if (hasPermission('webhooks.view')) {
+        items.push({
+            title: 'Webhooks',
+            href: '/admin/webhooks',
+            icon: ShieldCheck,
         });
     }
     return items;

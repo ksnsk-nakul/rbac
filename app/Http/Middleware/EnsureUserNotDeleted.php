@@ -18,7 +18,7 @@ class EnsureUserNotDeleted
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('status', 'Your account is no longer available.');
+            return redirect('/login')->with('status', 'Your account is no longer available.');
         }
 
         return $next($request);

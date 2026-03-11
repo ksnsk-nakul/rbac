@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\ModuleRegistry;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,7 @@ class HandleInertiaRequests extends Middleware
         $demoCredentials = null;
         $user = $request->user()?->loadMissing('role.permissions');
         $permissions = [];
+        $moduleNav = [];
 
         if ($user) {
             $permissions = $user->isAdmin()
@@ -51,11 +53,12 @@ class HandleInertiaRequests extends Middleware
                     'email' => 'admin@admin.com',
                     'password' => '1234567890',
                 ],
-                'subadmin' => [
-                    'email' => 'subadmin@admin.com',
-                    'password' => '1234567890',
-                ],
             ];
+        }
+
+        if (app()->bound(ModuleRegistry::class)) {
+            $registry = app(ModuleRegistry::class);
+            $moduleNav = $registry->navigation($registry->enabled());
         }
 
         return [
@@ -65,6 +68,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'permissions' => $permissions,
             ],
+            'moduleNav' => $moduleNav,
             'demoCredentials' => $demoCredentials,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [

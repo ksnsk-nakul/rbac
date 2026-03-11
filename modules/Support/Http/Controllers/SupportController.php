@@ -1,0 +1,14 @@
+<?php
+
+namespace Modules\Support\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+
+class SupportController extends Controller
+{
+    public function index(Request $request)
+    {
+        return view('support::index');
+    }
+}

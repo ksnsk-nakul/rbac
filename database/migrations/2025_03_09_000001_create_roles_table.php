@@ -13,6 +13,8 @@ return new class extends Migration
             $table->string('name'); // Display name
             $table->string('slug')->unique(); // admin, user, subadmin
             $table->boolean('is_subadmin')->default(false); // dynamically managed under admin
+            $table->string('route'); // login route
+            $table->boolean('is_default')->default(false);
             $table->timestamps();
         });
     }

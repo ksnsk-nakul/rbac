@@ -6,14 +6,19 @@ import type { BreadcrumbItem } from '@/types';
 type Permission = { id: number; name: string; slug: string };
 type Role = { id: number; name: string; slug: string; users_count: number; permissions: Permission[] };
 type AdminUser = { id: number; name: string; email: string; role?: string };
+type ActivityLog = { id: number; email?: string; event: string; role?: string; ip_address?: string; created_at?: string };
 
 const props = defineProps<{
     roles: Role[];
     permissions: Permission[];
     usersCount: number | null;
+    rolesCount: number;
+    permissionsCount: number;
     adminUsers: AdminUser[];
+    recentActivity: ActivityLog[];
     canRoles: boolean;
     canUsers: boolean;
+    canActivityAll: boolean;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -46,7 +51,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div class="rounded-lg border p-4">
                     <div class="text-sm text-muted-foreground">Roles</div>
                     <div class="mt-2 text-2xl font-semibold">
-                        {{ roles.length || '—' }}
+                        {{ rolesCount }}
                     </div>
                     <div v-if="!canRoles" class="mt-2 text-xs text-muted-foreground">
                         You do not have access to role data.
@@ -55,7 +60,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 <div class="rounded-lg border p-4">
                     <div class="text-sm text-muted-foreground">Permissions</div>
                     <div class="mt-2 text-2xl font-semibold">
-                        {{ permissions.length || '—' }}
+                        {{ permissionsCount }}
                     </div>
                 </div>
             </div>
@@ -76,6 +81,35 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <td class="px-4 py-3">{{ account.name }}</td>
                                 <td class="px-4 py-3">{{ account.email }}</td>
                                 <td class="px-4 py-3 capitalize">{{ account.role ?? 'admin' }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section v-if="canActivityAll && recentActivity.length" class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-medium">Recent activity</h2>
+                    <a href="/admin/activity" class="text-sm text-primary hover:underline">View all</a>
+                </div>
+                <div class="rounded-lg border">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b bg-muted/50">
+                            <tr>
+                                <th class="px-4 py-3 font-medium">Email</th>
+                                <th class="px-4 py-3 font-medium">Event</th>
+                                <th class="px-4 py-3 font-medium">Role</th>
+                                <th class="px-4 py-3 font-medium">IP</th>
+                                <th class="px-4 py-3 font-medium">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in recentActivity" :key="log.id" class="border-b last:border-0">
+                                <td class="px-4 py-3">{{ log.email ?? '—' }}</td>
+                                <td class="px-4 py-3 capitalize">{{ log.event }}</td>
+                                <td class="px-4 py-3 capitalize">{{ log.role ?? '—' }}</td>
+                                <td class="px-4 py-3">{{ log.ip_address ?? '—' }}</td>
+                                <td class="px-4 py-3">{{ log.created_at ?? '—' }}</td>
                             </tr>
                         </tbody>
                     </table>

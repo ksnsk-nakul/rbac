@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AuditLogger;
+use App\Services\PlanGate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,13 +15,11 @@ use Inertia\Response;
 class ManagementController extends Controller
 {
     /**
-     * List users (library/reader role).
+     * List users.
      */
     public function users(Request $request): Response
     {
-        $role = Role::where('slug', 'user')->firstOrFail();
         $users = User::with('role')
-            ->where('role_id', $role->id)
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
@@ -27,24 +27,7 @@ class ManagementController extends Controller
         return Inertia::render('admin/management/Users', [
             'users' => $users,
             'roleLabel' => 'Users',
-        ]);
-    }
-
-    /**
-     * List subadmins (dynamically managed).
-     */
-    public function subadmins(Request $request): Response
-    {
-        $role = Role::where('slug', 'subadmin')->firstOrFail();
-        $users = User::with('role')
-            ->where('role_id', $role->id)
-            ->orderBy('name')
-            ->paginate(15)
-            ->withQueryString();
-
-        return Inertia::render('admin/management/Subadmins', [
-            'users' => $users,
-            'roleLabel' => 'Subadmins',
+            'roles' => Role::orderBy('name')->get(['id', 'name', 'slug']),
         ]);
     }
 
@@ -58,46 +41,34 @@ class ManagementController extends Controller
             abort(403, 'Cannot remove an admin.');
         }
 
-        if ($request->user()?->isSubadmin() && $user->isSubadmin()) {
-            abort(403, 'Subadmins cannot remove other subadmins.');
-        }
+        AuditLogger::log('user.deleted', 'user', $user, 'User soft-deleted');
 
         $user->delete();
 
         return back()->with('status', 'User has been removed and can no longer sign in.');
     }
 
-    /**
-     * Store a new subadmin (dynamically added under management).
-     */
-    public function storeSubadmin(Request $request): RedirectResponse
+    public function assignRole(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                'unique:users,email',
-                function (string $attr, mixed $value, \Closure $fail) {
-                    if (User::withTrashed()->where('email', $value)->exists()) {
-                        $fail('This email cannot be used.');
-                    }
-                },
-            ],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role_id' => ['required', 'exists:roles,id'],
+            'expires_at' => ['nullable', 'date'],
         ]);
 
-        $role = Role::where('slug', 'subadmin')->firstOrFail();
+        $role = Role::findOrFail($validated['role_id']);
+        if ($role->slug === 'super_admin') {
+            $plan = PlanGate::forUser($request->user());
+            if ($plan && User::whereHas('role', fn ($query) => $query->where('slug', 'super_admin'))->count() >= $plan->max_admin_users) {
+                return back()->with('status', 'Admin limit reached for your plan.');
+            }
+        }
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => $validated['password'],
+        $user->roleAssignments()->create([
             'role_id' => $role->id,
+            'assigned_by' => $request->user()?->id,
+            'expires_at' => $validated['expires_at'],
         ]);
 
-        return back()->with('status', 'Subadmin added. They can sign in at the subadmin login.');
+        return back()->with('status', 'Temporary role assigned.');
     }
 }

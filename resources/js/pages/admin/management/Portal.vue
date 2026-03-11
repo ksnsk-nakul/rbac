@@ -17,7 +17,7 @@ const hasPermission = (permission: string) =>
 const cards = computed(() => {
     const items: { title: string; description: string; href: string }[] = [];
 
-    if (hasPermission('users.manage')) {
+    if (hasPermission('accounts.view')) {
         items.push({
             title: 'Users',
             description: 'Manage user accounts and access.',
@@ -25,15 +25,7 @@ const cards = computed(() => {
         });
     }
 
-    if (hasPermission('subadmins.manage')) {
-        items.push({
-            title: 'Subadmins',
-            description: 'Create and manage subadmin access.',
-            href: '/admin/management/subadmins',
-        });
-    }
-
-    if (hasPermission('roles.manage')) {
+    if (hasPermission('roles.view')) {
         items.push({
             title: 'Roles & permissions',
             description: 'Create roles and assign permissions.',
@@ -41,11 +33,51 @@ const cards = computed(() => {
         });
     }
 
-    if (hasPermission('sitemap.view')) {
+    if (hasPermission('templates.view')) {
+        items.push({
+            title: 'Role templates',
+            description: 'Reuse permission templates for new roles.',
+            href: '/admin/management/role-templates',
+        });
+    }
+
+    if (hasPermission('audit.export')) {
+        items.push({
+            title: 'Activity log',
+            description: 'Review login activity across all users.',
+            href: '/admin/activity',
+        });
+    }
+
+    if (hasPermission('approvals.view')) {
+        items.push({
+            title: 'Approvals',
+            description: 'Review high-risk role and permission changes.',
+            href: '/admin/approvals',
+        });
+    }
+
+    if (hasPermission('security.ip_allowlist.view')) {
+        items.push({
+            title: 'IP allowlist',
+            description: 'Restrict role access by IP address.',
+            href: '/admin/security/allowlist',
+        });
+    }
+
+    if (hasPermission('system.settings.view')) {
         items.push({
             title: 'Sitemap',
             description: 'Overview of admin routes and tools.',
             href: '/admin/management/sitemap',
+        });
+    }
+
+    if (hasPermission('webhooks.view')) {
+        items.push({
+            title: 'Webhooks',
+            description: 'Manage security webhook endpoints.',
+            href: '/admin/webhooks',
         });
     }
 

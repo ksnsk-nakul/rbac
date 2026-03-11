@@ -2,29 +2,46 @@
 
 use App\Http\Controllers\Admin\ManagementController;
 use App\Http\Controllers\Admin\RoleManagementController;
+use App\Http\Controllers\Admin\RoleTemplateController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted'])->prefix('admin/management')->name('admin.management.')->group(function () {
-    Route::middleware('admin.or.subadmin')->group(function () {
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist'])->prefix('admin/management')->name('admin.management.')->group(function () {
+    Route::middleware('permission:roles.view')->group(function () {
         Route::inertia('/', 'admin/management/Portal')->name('portal');
     });
 
-    Route::middleware('permission:users.manage')->group(function () {
+    Route::middleware('permission:accounts.view')->group(function () {
         Route::get('users', [ManagementController::class, 'users'])->name('users.index');
-        Route::delete('users/{user}', [ManagementController::class, 'destroy'])->name('users.destroy');
     });
+    Route::delete('users/{user}', [ManagementController::class, 'destroy'])
+        ->middleware('permission:accounts.update')
+        ->name('users.destroy');
+    Route::post('users/{user}/assign-role', [ManagementController::class, 'assignRole'])
+        ->middleware('permission:roles.edit')
+        ->name('users.assign-role');
 
-    Route::middleware('permission:subadmins.manage')->group(function () {
-        Route::get('subadmins', [ManagementController::class, 'subadmins'])->name('subadmins.index');
-        Route::post('subadmins', [ManagementController::class, 'storeSubadmin'])->name('subadmins.store');
-        Route::delete('subadmins/{user}', [ManagementController::class, 'destroy'])->name('subadmins.destroy');
-    });
+    Route::get('roles', [RoleManagementController::class, 'index'])
+        ->middleware('permission:roles.view')
+        ->name('roles.index');
+    Route::post('roles', [RoleManagementController::class, 'store'])
+        ->middleware(['permission:roles.create', 'permission:permissions.assign'])
+        ->name('roles.store');
+    Route::put('roles/{role}', [RoleManagementController::class, 'update'])
+        ->middleware(['permission:roles.edit', 'permission:permissions.assign'])
+        ->name('roles.update');
+    Route::delete('roles/{role}', [RoleManagementController::class, 'destroy'])
+        ->middleware('permission:roles.delete')
+        ->name('roles.destroy');
 
-    Route::middleware('permission:roles.manage')->group(function () {
-        Route::get('roles', [RoleManagementController::class, 'index'])->name('roles.index');
-        Route::post('roles', [RoleManagementController::class, 'store'])->name('roles.store');
-        Route::put('roles/{role}', [RoleManagementController::class, 'update'])->name('roles.update');
-    });
+    Route::get('role-templates', [RoleTemplateController::class, 'index'])
+        ->middleware('permission:templates.view')
+        ->name('templates.index');
+    Route::post('role-templates', [RoleTemplateController::class, 'store'])
+        ->middleware('permission:templates.create')
+        ->name('templates.store');
+    Route::post('role-templates/{template}/apply', [RoleTemplateController::class, 'apply'])
+        ->middleware('permission:templates.apply')
+        ->name('templates.apply');
 
-    Route::middleware('permission:sitemap.view')->get('sitemap', fn () => inertia('admin/management/Sitemap'))->name('sitemap');
+    Route::middleware('permission:system.settings.view')->get('sitemap', fn () => inertia('admin/management/Sitemap'))->name('sitemap');
 });

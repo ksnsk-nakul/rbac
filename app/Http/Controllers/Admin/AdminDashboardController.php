@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -15,15 +16,12 @@ class AdminDashboardController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user()?->loadMissing('role.permissions');
+        $canRoles = $user?->hasPermission('roles.view') ?? false;
+        $canUsers = $user?->hasPermission('accounts.view') ?? false;
+        $canActivityAll = $user?->hasPermission('audit.export') ?? false;
 
-        $canRoles = $user?->hasPermission('roles.manage') ?? false;
-        $canUsers = $user?->hasPermission('users.manage') ?? false;
-
-        $roles = [];
-        $permissions = [];
-
-        if ($canRoles) {
-            $roles = Role::with('permissions')
+        $roles = $canRoles
+            ? Role::with('permissions')
                 ->withCount('users')
                 ->orderBy('name')
                 ->get()
@@ -37,19 +35,18 @@ class AdminDashboardController extends Controller
                         'name' => $permission->name,
                         'slug' => $permission->slug,
                     ]),
-                ]);
+                ])
+            : [];
 
-            $permissions = Permission::orderBy('name')
-                ->get(['id', 'name', 'slug']);
-        }
+        $permissions = $canRoles
+            ? Permission::orderBy('name')->get(['id', 'name', 'slug'])
+            : [];
 
-        $usersCount = $canUsers
-            ? User::whereHas('role', fn ($query) => $query->where('slug', 'user'))->count()
-            : null;
+        $usersCount = User::count();
 
         $adminUsers = $user && $user->isAdmin()
             ? User::with('role')
-                ->whereHas('role', fn ($query) => $query->whereIn('slug', ['admin', 'subadmin']))
+                ->whereHas('role', fn ($query) => $query->whereIn('slug', ['super_admin']))
                 ->orderBy('name')
                 ->get()
                 ->map(fn (User $account) => [
@@ -60,13 +57,32 @@ class AdminDashboardController extends Controller
                 ])
             : [];
 
+        $recentActivity = $canActivityAll
+            ? ActivityLog::with('user')
+                ->orderByDesc('id')
+                ->limit(12)
+                ->get()
+                ->map(fn (ActivityLog $log) => [
+                    'id' => $log->id,
+                    'email' => $log->user?->email,
+                    'event' => $log->action,
+                    'role' => $log->user?->role?->slug,
+                    'ip_address' => $log->ip_address,
+                    'created_at' => $log->created_at?->toDateTimeString(),
+                ])
+            : [];
+
         return Inertia::render('admin/Dashboard', [
             'roles' => $roles,
             'permissions' => $permissions,
             'usersCount' => $usersCount,
+            'rolesCount' => Role::count(),
+            'permissionsCount' => Permission::count(),
             'adminUsers' => $adminUsers,
             'canRoles' => $canRoles,
             'canUsers' => $canUsers,
+            'canActivityAll' => $canActivityAll,
+            'recentActivity' => $recentActivity,
         ]);
     }
 }

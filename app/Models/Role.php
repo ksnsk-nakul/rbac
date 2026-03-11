@@ -8,12 +8,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'slug', 'is_subadmin'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'is_subadmin',
+        'route',
+        'is_default',
+        'mfa_required',
+        'require_ip_allowlist',
+    ];
 
     protected function casts(): array
     {
         return [
             'is_subadmin' => 'boolean',
+            'is_default' => 'boolean',
+            'mfa_required' => 'boolean',
+            'require_ip_allowlist' => 'boolean',
         ];
     }
 
@@ -27,9 +38,14 @@ class Role extends Model
         return $this->belongsToMany(Permission::class);
     }
 
+    public function ipAllowlistEntries(): HasMany
+    {
+        return $this->hasMany(IpAllowlistEntry::class);
+    }
+
     public function isAdmin(): bool
     {
-        return $this->slug === 'admin';
+        return $this->slug === 'super_admin';
     }
 
     public function isUser(): bool

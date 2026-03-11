@@ -1,0 +1,18 @@
+{
+  "name": "Support Desk Module",
+  "slug": "support",
+  "version": "0.1.0",
+  "description": "Support ticket intake and triage.",
+  "provider": "Modules\\Support\\SupportServiceProvider",
+  "default_enabled": false,
+  "permissions": [
+    {"name": "View support", "slug": "support.view", "group": "support"},
+    {"name": "Add support", "slug": "support.add", "group": "support"},
+    {"name": "Edit support", "slug": "support.edit", "group": "support"},
+    {"name": "Update support", "slug": "support.update", "group": "support"},
+    {"name": "Delete support", "slug": "support.delete", "group": "support"}
+  ],
+  "navigation": [
+    {"title": "Support Desk", "href": "/admin/support", "permission": "support.view"}
+  ]
+}

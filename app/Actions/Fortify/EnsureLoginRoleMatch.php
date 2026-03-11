@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -32,15 +33,9 @@ class EnsureLoginRoleMatch
             ]);
         }
 
-        $slug = $user->role->slug;
-        $allowed = match ($intendedRole) {
-            'user', 'library', 'reader' => ['user'],
-            'admin' => ['admin'],
-            'subadmin' => ['subadmin'],
-            default => [],
-        };
+        $role = Role::where('route', $intendedRole)->orWhere('slug', $intendedRole)->first();
 
-        if (! in_array($slug, $allowed, true)) {
+        if (! $role || $user->role->id !== $role->id) {
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

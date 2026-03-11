@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            AssignRequestId::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -27,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.or.subadmin' => \App\Http\Middleware\EnsureUserIsAdminOrSubadmin::class,
             'permission' => \App\Http\Middleware\EnsureUserHasPermission::class,
             'ensure.not.deleted' => \App\Http\Middleware\EnsureUserNotDeleted::class,
+            'ensure.mfa' => \App\Http\Middleware\EnsureMfaEnrollment::class,
+            'ensure.ip_allowlist' => \App\Http\Middleware\EnsureIpAllowed::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

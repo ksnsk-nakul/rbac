@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,6 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'plan_id',
     ];
 
     /**
@@ -58,19 +60,58 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+
+    public function apiTokens(): HasMany
+    {
+        return $this->hasMany(ApiToken::class);
+    }
+
+    public function trustedDevices(): HasMany
+    {
+        return $this->hasMany(TrustedDevice::class);
+    }
+
+    public function roleAssignments(): HasMany
+    {
+        return $this->hasMany(UserRoleAssignment::class);
+    }
+
+    public function activeRoleAssignment(): ?UserRoleAssignment
+    {
+        return $this->roleAssignments()
+            ->where(function ($query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->orderByDesc('expires_at')
+            ->first();
+    }
+
+    public function currentRole(): ?Role
+    {
+        $assignment = $this->activeRoleAssignment();
+
+        return $assignment?->role ?? $this->role;
+    }
+
     public function hasRole(string $slug): bool
     {
-        return $this->role && $this->role->slug === $slug;
+        return $this->currentRole() && $this->currentRole()->slug === $slug;
     }
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('admin');
+        return $this->hasRole('super_admin');
     }
 
     public function isSubadmin(): bool
     {
-        return $this->hasRole('subadmin') || ($this->role && $this->role->is_subadmin);
+        $role = $this->currentRole();
+
+        return $role && ($role->slug === 'subadmin' || $role->is_subadmin);
     }
 
     public function hasPermission(string $slug): bool
@@ -79,6 +120,6 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->role?->permissions?->contains('slug', $slug) ?? false;
+        return $this->currentRole()?->permissions?->contains('slug', $slug) ?? false;
     }
 }

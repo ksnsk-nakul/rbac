@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -13,6 +13,8 @@ type User = {
     role?: { id: number; name: string; slug: string };
 };
 
+type Role = { id: number; name: string; slug: string };
+
 type PaginatedUsers = {
     data: User[];
     current_page: number;
@@ -24,12 +26,19 @@ type PaginatedUsers = {
 const props = defineProps<{
     users: PaginatedUsers;
     roleLabel: string;
+    roles: Role[];
 }>();
 
 const page = usePage();
 const status = computed(() => (page.props.flash as { status?: string } | undefined)?.status);
-const isSubadmin = computed(() => (page.props.auth as { user?: { role?: { slug?: string } } } | undefined)?.user?.role?.slug === 'subadmin');
+const assignments = reactive<Record<number, { role_id: number | null; expires_at: string | null }>>({});
 
+props.users.data.forEach((user) => {
+    assignments[user.id] = {
+        role_id: user.role?.id ?? null,
+        expires_at: null,
+    };
+});
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Management', href: '/admin/management/users' },
@@ -37,11 +46,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 function destroy(userId: number) {
-    const warning = isSubadmin.value
-        ? 'Remove this user? This will ban them from signing in or registering again.'
-        : 'Remove this user? They will not be able to sign in or register again.';
-    if (!confirm(warning)) return;
+    if (!confirm('Remove this user? They will not be able to sign in or register again.')) return;
     router.delete(`/admin/management/users/${userId}`, { preserveScroll: true });
+}
+
+function submitAssignment(userId: number) {
+    const assignment = assignments[userId];
+    if (!assignment?.role_id) return;
+    router.post(
+        `/admin/management/users/${userId}/assign-role`,
+        {
+            role_id: assignment.role_id,
+            expires_at: assignment.expires_at || null,
+        },
+        { preserveScroll: true }
+    );
 }
 </script>
 
@@ -56,18 +75,13 @@ function destroy(userId: number) {
                 :title="roleLabel"
                 :description="`View and remove ${roleLabel.toLowerCase()}. Removed users cannot sign in or register again.`"
             />
-            <p
-                v-if="isSubadmin"
-                class="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-100"
-            >
-                Warning: Removing a user bans them from signing in or registering again.
-            </p>
             <div class="rounded-md border">
                 <table class="w-full text-left text-sm">
                     <thead class="border-b bg-muted/50">
                         <tr>
                             <th class="px-4 py-3 font-medium">Name</th>
                             <th class="px-4 py-3 font-medium">Email</th>
+                            <th class="px-4 py-3 font-medium">Temporary role</th>
                             <th class="w-[100px] px-4 py-3 font-medium">Actions</th>
                         </tr>
                     </thead>
@@ -75,6 +89,25 @@ function destroy(userId: number) {
                         <tr v-for="user in users.data" :key="user.id" class="border-b last:border-0">
                             <td class="px-4 py-3">{{ user.name }}</td>
                             <td class="px-4 py-3">{{ user.email }}</td>
+                            <td class="px-4 py-3">
+                                <form class="flex flex-wrap items-center gap-2" @submit.prevent="submitAssignment(user.id)">
+                                    <select
+                                        v-model="assignments[user.id].role_id"
+                                        class="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                                    >
+                                        <option :value="null" disabled>Select role</option>
+                                        <option v-for="role in roles" :key="role.id" :value="role.id">
+                                            {{ role.name }}
+                                        </option>
+                                    </select>
+                                    <input
+                                        type="date"
+                                        v-model="assignments[user.id].expires_at"
+                                        class="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                                    />
+                                    <Button size="sm" variant="outline" type="submit">Assign</Button>
+                                </form>
+                            </td>
                             <td class="px-4 py-3">
                                 <Button
                                     variant="destructive"

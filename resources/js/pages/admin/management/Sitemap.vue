@@ -13,20 +13,25 @@ const sections = [
     {
         title: 'Auth',
         links: [
-            { label: 'User login', href: '/user/login' },
-            { label: 'User register', href: '/user/register' },
-            { label: 'Admin login', href: '/admin/login' },
-            { label: 'Subadmin login', href: '/subadmin/login' },
+            { label: 'Role login', href: '/login/{role}' },
+            { label: 'Role register', href: '/register/{role}' },
         ],
     },
     {
         title: 'Management',
         links: [
             { label: 'Admin dashboard', href: '/admin/dashboard' },
+            { label: 'Activity log', href: '/admin/activity' },
             { label: 'Users', href: '/admin/management/users' },
             { label: 'Subadmins', href: '/admin/management/subadmins' },
             { label: 'Roles & permissions', href: '/admin/management/roles' },
             { label: 'Sitemap', href: '/admin/management/sitemap' },
+        ],
+    },
+    {
+        title: 'Personal',
+        links: [
+            { label: 'My activity', href: '/activity' },
         ],
     },
     {

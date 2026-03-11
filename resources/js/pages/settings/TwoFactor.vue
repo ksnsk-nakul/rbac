@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
 import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { disable, enable, show } from '@/routes/two-factor';
+import AccountSettingsLayout from '@/layouts/account/SettingsLayout.vue';
+import { disable, enable } from '@/routes/two-factor';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -25,8 +25,8 @@ withDefaults(defineProps<Props>(), {
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Two-factor authentication',
-        href: show(),
+        title: 'Account settings',
+        href: '/account/settings/security/mfa',
     },
 ];
 
@@ -44,7 +44,7 @@ onUnmounted(() => {
 
         <h1 class="sr-only">Two-factor authentication settings</h1>
 
-        <SettingsLayout>
+        <AccountSettingsLayout>
             <div class="space-y-6">
                 <Heading
                     variant="small"
@@ -120,6 +120,6 @@ onUnmounted(() => {
                     :twoFactorEnabled="twoFactorEnabled"
                 />
             </div>
-        </SettingsLayout>
+        </AccountSettingsLayout>
     </AppLayout>
 </template>

@@ -1,0 +1,18 @@
+{
+  "name": "Task Management Module",
+  "slug": "tasks",
+  "version": "0.1.0",
+  "description": "Task assignment and tracking.",
+  "provider": "Modules\\Tasks\\TasksServiceProvider",
+  "default_enabled": false,
+  "permissions": [
+    {"name": "View tasks", "slug": "tasks.view", "group": "tasks"},
+    {"name": "Add tasks", "slug": "tasks.add", "group": "tasks"},
+    {"name": "Edit tasks", "slug": "tasks.edit", "group": "tasks"},
+    {"name": "Update tasks", "slug": "tasks.update", "group": "tasks"},
+    {"name": "Delete tasks", "slug": "tasks.delete", "group": "tasks"}
+  ],
+  "navigation": [
+    {"title": "Tasks", "href": "/admin/tasks", "permission": "tasks.view"}
+  ]
+}

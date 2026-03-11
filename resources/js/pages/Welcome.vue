@@ -34,9 +34,9 @@ const roles = [
     <div class="min-h-screen bg-background px-6 py-10 text-foreground">
         <div class="mx-auto w-full max-w-5xl">
             <header class="mb-8 flex flex-col gap-2 text-center">
-                <h1 class="text-3xl font-semibold">RBAC Portal</h1>
+                <h1 class="text-3xl font-semibold">RBAC</h1>
                 <p class="text-sm text-muted-foreground">
-                    Choose a role to sign in or register.
+                    Sign in or register.
                 </p>
             </header>
 

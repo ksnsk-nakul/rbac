@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -43,6 +46,31 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
 
+        Fortify::authenticateUsing(function (Request $request) {
+            $roleParam = $request->input('intended_role') ?? $request->input('role');
+            $role = Role::where('route', $roleParam)
+                ->orWhere('slug', $roleParam)
+                ->first();
+
+            if (! $role) {
+                $role = Role::where('is_default', true)->first();
+            }
+
+            if (! $role) {
+                return null;
+            }
+
+            $user = User::where('email', $request->input('email'))
+                ->where('role_id', $role->id)
+                ->first();
+
+            if ($user && Hash::check($request->input('password'), $user->password)) {
+                return $user;
+            }
+
+            return null;
+        });
+
         Fortify::authenticateThrough(function (Request $request) {
             return array_filter([
                 config('fortify.limiters.login') ? \Laravel\Fortify\Actions\EnsureLoginIsNotThrottled::class : null,
@@ -60,10 +88,12 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => Inertia::render('auth/UserLogin', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
-            'canRegister' => Features::enabled(Features::registration()),
-        ]));
+        Fortify::loginView(function () {
+            $defaultRole = Role::where('is_default', true)->first();
+            $route = $defaultRole?->route ?? 'user';
+
+            return redirect()->to("/login/{$route}");
+        });
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
             'email' => $request->email,
@@ -78,7 +108,12 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/UserRegister'));
+        Fortify::registerView(function () {
+            $defaultRole = Role::where('is_default', true)->first();
+            $route = $defaultRole?->route ?? 'user';
+
+            return redirect()->to("/register/{$route}");
+        });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/TwoFactorChallenge'));
 
