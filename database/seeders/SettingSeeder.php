@@ -27,10 +27,13 @@ class SettingSeeder extends Seeder
             'sms.provider' => 'twilio',
             'sms.api_key' => null,
             'sms.sender_id' => null,
-            'payment.provider' => 'stripe',
-            'payment.public_key' => null,
-            'payment.secret_key' => null,
-            'payment.webhook_secret' => null,
+            'payment.provider' => 'razorpay',
+            'payment.razorpay_key' => null,
+            'payment.razorpay_secret' => null,
+            'payment.razorpay_webhook_secret' => null,
+            'payment.stripe_key' => null,
+            'payment.stripe_secret' => null,
+            'license.key' => null,
         ];
 
         foreach ($defaults as $key => $value) {

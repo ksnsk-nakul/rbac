@@ -101,6 +101,10 @@ const submit = () => {
                             <input v-model="form['payment.razorpay_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
                         </label>
                         <label class="space-y-1 text-sm">
+                            <span>Razorpay Webhook Secret</span>
+                            <input v-model="form['payment.razorpay_webhook_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
+                        </label>
+                        <label class="space-y-1 text-sm">
                             <span>PayPal Client ID</span>
                             <input v-model="form['payment.paypal_client_id']" class="w-full rounded-md border px-3 py-2" />
                         </label>

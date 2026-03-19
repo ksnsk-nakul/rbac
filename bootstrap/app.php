@@ -5,6 +5,8 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\TrackLastVisited;
 use App\Http\Middleware\EnsureOrganizationSelected;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\EnsureValidLicense;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             AssignRequestId::class,
+            SecurityHeaders::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             TrackLastVisited::class,
@@ -35,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.mfa' => \App\Http\Middleware\EnsureMfaEnrollment::class,
             'ensure.ip_allowlist' => \App\Http\Middleware\EnsureIpAllowed::class,
             'ensure.org' => EnsureOrganizationSelected::class,
+            'ensure.license' => EnsureValidLicense::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Activity, LayoutGrid, Map, ShieldCheck, Users } from 'lucide-vue-next';
+import { Activity, LayoutGrid, LifeBuoy, Map, ShieldCheck, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -105,6 +105,27 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'App settings',
             href: '/admin/settings',
             icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('integrations.view')) {
+        items.push({
+            title: 'Integrations',
+            href: '/admin/integrations',
+            icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('billing.view')) {
+        items.push({
+            title: 'Billing',
+            href: '/admin/billing',
+            icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('support.manage')) {
+        items.push({
+            title: 'Support',
+            href: '/admin/support',
+            icon: LifeBuoy,
         });
     }
     if (hasPermission('webhooks.view')) {

@@ -9,6 +9,7 @@ class LoginActivityLog extends Model
 {
     protected $fillable = [
         'user_id',
+        'organization_id',
         'role_id',
         'email',
         'event',

@@ -50,6 +50,10 @@ class RoleSeeder extends Seeder
             ['name' => 'Revoke API tokens', 'slug' => 'api_tokens.revoke', 'main_group' => 'api'],
             ['name' => 'View system settings', 'slug' => 'system.settings.view', 'main_group' => 'system'],
             ['name' => 'Update system settings', 'slug' => 'system.settings.update', 'main_group' => 'system'],
+            ['name' => 'View integrations', 'slug' => 'integrations.view', 'main_group' => 'system'],
+            ['name' => 'Update integrations', 'slug' => 'integrations.update', 'main_group' => 'system'],
+            ['name' => 'View billing', 'slug' => 'billing.view', 'main_group' => 'billing'],
+            ['name' => 'Manage billing', 'slug' => 'billing.manage', 'main_group' => 'billing'],
             ['name' => 'View sessions', 'slug' => 'security.sessions.view', 'main_group' => 'security'],
             ['name' => 'Revoke sessions', 'slug' => 'security.sessions.revoke', 'main_group' => 'security'],
             ['name' => 'View IP allowlist', 'slug' => 'security.ip_allowlist.view', 'main_group' => 'security'],
@@ -62,6 +66,9 @@ class RoleSeeder extends Seeder
             ['name' => 'Apply role templates', 'slug' => 'templates.apply', 'main_group' => 'templates'],
             ['name' => 'View webhooks', 'slug' => 'webhooks.view', 'main_group' => 'system'],
             ['name' => 'Manage webhooks', 'slug' => 'webhooks.manage', 'main_group' => 'system'],
+            ['name' => 'Create support tickets', 'slug' => 'support.create', 'main_group' => 'support'],
+            ['name' => 'View support tickets', 'slug' => 'support.view', 'main_group' => 'support'],
+            ['name' => 'Manage support tickets', 'slug' => 'support.manage', 'main_group' => 'support'],
         ];
 
         foreach ($permissions as $permission) {

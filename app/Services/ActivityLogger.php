@@ -23,6 +23,7 @@ class ActivityLogger
 
         $payload = [
             'user_id' => $userId ?? $user?->id,
+            'organization_id' => $user?->current_organization_id,
             'action' => $action,
             'model_type' => $model ? $model::class : null,
             'model_id' => $model?->getKey(),
@@ -61,6 +62,7 @@ class ActivityLogger
         SecurityWebhookService::dispatch($event, [
             'id' => $log->id,
             'user_id' => $log->user_id,
+            'organization_id' => $log->organization_id,
             'action' => $log->action,
             'model_type' => $log->model_type,
             'model_id' => $log->model_id,

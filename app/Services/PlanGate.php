@@ -9,6 +9,11 @@ class PlanGate
 {
     public static function forUser(?User $user): ?Plan
     {
+        $orgPlan = $user?->currentOrganization?->plan;
+        if ($orgPlan) {
+            return $orgPlan;
+        }
+
         return $user?->plan ?: Plan::where('slug', 'starter')->first();
     }
 

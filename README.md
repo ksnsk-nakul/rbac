@@ -65,6 +65,16 @@ php artisan app:install --fresh --seed
 
 See `docs/INSTALLATION.md` for Docker + Apache instructions and DNS notes.
 
+## Docs
+
+- `docs/INSTALLATION.md` (Apache/Docker/DNS)
+- `docs/PRODUCT.md` (product overview)
+- `docs/ORG_TENANCY.md` (organizations/workspaces)
+- `docs/BILLING_RAZORPAY.md` (Razorpay billing)
+- `docs/LICENSING.md` (optional license enforcement)
+- `docs/SUPPORT.md` (support tickets module)
+- `docs/PRODUCT_TO_MARKET_PLAN.md` (release and sales plan)
+
 ## Notes
 
 - This project uses Laravel Fortify with role-based login routes (`/login/{role}`).

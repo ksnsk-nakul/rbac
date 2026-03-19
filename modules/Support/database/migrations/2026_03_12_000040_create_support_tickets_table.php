@@ -8,17 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('support_tickets', function (Blueprint $table) {
-            $table->id();
-            $table->string('subject');
-            $table->string('status')->default('open');
-            $table->string('priority')->default('normal');
-            $table->timestamps();
-        });
+        // Deprecated: support tickets are now created by the main app migrations
+        // (see `database/migrations/2026_03_19_000009_create_support_tickets_tables.php`).
+        //
+        // This migration is intentionally a no-op to avoid creating duplicate tables
+        // when the Support module is enabled via the module registry.
+        return;
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('support_tickets');
+        // No-op: do not drop consolidated tables.
+        return;
     }
 };

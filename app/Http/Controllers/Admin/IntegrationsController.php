@@ -80,6 +80,7 @@ class IntegrationsController extends Controller
             ['group' => 'payment', 'key' => 'payment.stripe_secret'],
             ['group' => 'payment', 'key' => 'payment.razorpay_key'],
             ['group' => 'payment', 'key' => 'payment.razorpay_secret'],
+            ['group' => 'payment', 'key' => 'payment.razorpay_webhook_secret'],
             ['group' => 'payment', 'key' => 'payment.paypal_client_id'],
             ['group' => 'payment', 'key' => 'payment.paypal_secret'],
             ['group' => 'mailer', 'key' => 'mailer.provider'],

@@ -53,6 +53,13 @@ const sidebarNavItems = computed<NavItem[]>(() => {
         });
     }
 
+    if (hasPermission('support.view')) {
+        items.push({
+            title: 'Support',
+            href: '/account/settings/support',
+        });
+    }
+
     return items;
 });
 </script>

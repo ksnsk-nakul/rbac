@@ -129,6 +129,7 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
+                'checkout' => fn () => $request->session()->get('checkout'),
             ],
         ];
     }

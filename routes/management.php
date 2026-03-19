@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\RoleTemplateController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])->prefix('admin/management')->name('admin.management.')->group(function () {
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org', 'ensure.license'])->prefix('admin/management')->name('admin.management.')->group(function () {
     Route::middleware('permission:roles.view')->group(function () {
         Route::inertia('/', 'admin/management/Portal')->name('portal');
     });
