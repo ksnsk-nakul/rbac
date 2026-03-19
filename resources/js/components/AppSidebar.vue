@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { Activity, LayoutGrid, LifeBuoy, Map, ShieldCheck, Users } from 'lucide-vue-next';
+import { Activity, LayoutGrid, LifeBuoy, Map, Package, ShieldCheck, Users } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -119,6 +119,13 @@ const mainNavItems = computed<NavItem[]>(() => {
             title: 'Billing',
             href: '/admin/billing',
             icon: ShieldCheck,
+        });
+    }
+    if (hasPermission('modules.view')) {
+        items.push({
+            title: 'Modules',
+            href: '/admin/modules',
+            icon: Package,
         });
     }
     if (hasPermission('support.manage')) {

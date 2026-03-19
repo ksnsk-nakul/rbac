@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\WebhookController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\BillingController;
 use App\Http\Controllers\Admin\SupportTicketController as AdminSupportTicketController;
+use App\Http\Controllers\Admin\ModulesController;
 use App\Http\Controllers\Auth\RoleAuthController;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Http\Controllers\Webhooks\RazorpayWebhookController;
@@ -89,6 +90,13 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
     Route::delete('admin/webhooks/{endpoint}', [WebhookController::class, 'destroy'])
         ->middleware('permission:webhooks.manage')
         ->name('admin.webhooks.destroy');
+
+    Route::get('admin/modules', [ModulesController::class, 'index'])
+        ->middleware('permission:modules.view')
+        ->name('admin.modules');
+    Route::patch('admin/modules/{module}', [ModulesController::class, 'update'])
+        ->middleware('permission:modules.manage')
+        ->name('admin.modules.update');
     Route::get('admin/approvals', [ApprovalController::class, 'index'])
         ->middleware('permission:approvals.view')
         ->name('admin.approvals');

@@ -66,6 +66,8 @@ class RoleSeeder extends Seeder
             ['name' => 'Apply role templates', 'slug' => 'templates.apply', 'main_group' => 'templates'],
             ['name' => 'View webhooks', 'slug' => 'webhooks.view', 'main_group' => 'system'],
             ['name' => 'Manage webhooks', 'slug' => 'webhooks.manage', 'main_group' => 'system'],
+            ['name' => 'View modules', 'slug' => 'modules.view', 'main_group' => 'system'],
+            ['name' => 'Manage modules', 'slug' => 'modules.manage', 'main_group' => 'system'],
             ['name' => 'Create support tickets', 'slug' => 'support.create', 'main_group' => 'support'],
             ['name' => 'View support tickets', 'slug' => 'support.view', 'main_group' => 'support'],
             ['name' => 'Manage support tickets', 'slug' => 'support.manage', 'main_group' => 'support'],
