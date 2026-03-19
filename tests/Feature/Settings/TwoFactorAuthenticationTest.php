@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -11,6 +12,23 @@ use Tests\TestCase;
 class TwoFactorAuthenticationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(
+            ['slug' => 'super_admin'],
+            [
+                'name' => 'Super Admin',
+                'route' => 'admin',
+                'is_subadmin' => false,
+                'is_default' => true,
+                'mfa_required' => false,
+                'require_ip_allowlist' => false,
+            ]
+        );
+    }
 
     public function test_two_factor_settings_page_can_be_rendered()
     {
@@ -23,11 +41,12 @@ class TwoFactorAuthenticationTest extends TestCase
             'confirmPassword' => true,
         ]);
 
-        $user = User::factory()->create();
+        $role = Role::where('slug', 'super_admin')->firstOrFail();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
         $this->actingAs($user)
             ->withSession(['auth.password_confirmed_at' => time()])
-            ->get(route('two-factor.show'))
+            ->get(route('account.settings.security.mfa'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('settings/TwoFactor')
                 ->where('twoFactorEnabled', false),
@@ -40,7 +59,8 @@ class TwoFactorAuthenticationTest extends TestCase
             $this->markTestSkipped('Two-factor authentication is not enabled.');
         }
 
-        $user = User::factory()->create();
+        $role = Role::where('slug', 'super_admin')->firstOrFail();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
         Features::twoFactorAuthentication([
             'confirm' => true,
@@ -48,7 +68,7 @@ class TwoFactorAuthenticationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->get(route('two-factor.show'));
+            ->get(route('account.settings.security.mfa'));
 
         $response->assertRedirect(route('password.confirm'));
     }
@@ -59,7 +79,8 @@ class TwoFactorAuthenticationTest extends TestCase
             $this->markTestSkipped('Two-factor authentication is not enabled.');
         }
 
-        $user = User::factory()->create();
+        $role = Role::where('slug', 'super_admin')->firstOrFail();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
         Features::twoFactorAuthentication([
             'confirm' => true,
@@ -67,7 +88,7 @@ class TwoFactorAuthenticationTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('two-factor.show'))
+            ->get(route('account.settings.security.mfa'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('settings/TwoFactor'),
@@ -82,11 +103,12 @@ class TwoFactorAuthenticationTest extends TestCase
 
         config(['fortify.features' => []]);
 
-        $user = User::factory()->create();
+        $role = Role::where('slug', 'super_admin')->firstOrFail();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
         $this->actingAs($user)
             ->withSession(['auth.password_confirmed_at' => time()])
-            ->get(route('two-factor.show'))
+            ->get(route('account.settings.security.mfa'))
             ->assertForbidden();
     }
 }

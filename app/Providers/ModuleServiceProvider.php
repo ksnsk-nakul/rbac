@@ -15,10 +15,17 @@ class ModuleServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $registry = $this->app->make(ModuleRegistry::class);
-        $registry->syncDatabase();
+        try {
+            $registry->syncDatabase();
+            $registry->registerPermissions($registry->discover());
+            $enabled = $registry->enabled();
+        } catch (\Throwable $e) {
+            if ($this->app->runningInConsole()) {
+                return;
+            }
 
-        $registry->registerPermissions($registry->discover());
-        $enabled = $registry->enabled();
+            throw $e;
+        }
 
         foreach ($enabled as $manifest) {
             if (! $manifest->provider) {

@@ -89,6 +89,19 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(function () {
+            if (auth()->check()) {
+                $user = auth()->user();
+                $redirect = session('last_visited');
+
+                if (! $redirect) {
+                    $redirect = $user && (method_exists($user, 'isAdmin') ? ($user->isAdmin() || $user->isSubadmin()) : false)
+                        ? '/admin/dashboard'
+                        : '/dashboard';
+                }
+
+                return redirect()->to($redirect);
+            }
+
             $defaultRole = Role::where('is_default', true)->first();
             $route = $defaultRole?->route ?? 'user';
 
@@ -109,6 +122,19 @@ class FortifyServiceProvider extends ServiceProvider
         ]));
 
         Fortify::registerView(function () {
+            if (auth()->check()) {
+                $user = auth()->user();
+                $redirect = session('last_visited');
+
+                if (! $redirect) {
+                    $redirect = $user && (method_exists($user, 'isAdmin') ? ($user->isAdmin() || $user->isSubadmin()) : false)
+                        ? '/admin/dashboard'
+                        : '/dashboard';
+                }
+
+                return redirect()->to($redirect);
+            }
+
             $defaultRole = Role::where('is_default', true)->first();
             $route = $defaultRole?->route ?? 'user';
 

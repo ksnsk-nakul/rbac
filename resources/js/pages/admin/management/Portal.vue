@@ -73,6 +73,14 @@ const cards = computed(() => {
         });
     }
 
+    if (hasPermission('system.settings.view')) {
+        items.push({
+            title: 'App settings',
+            description: 'Manage branding and theme defaults.',
+            href: '/admin/settings',
+        });
+    }
+
     if (hasPermission('webhooks.view')) {
         items.push({
             title: 'Webhooks',

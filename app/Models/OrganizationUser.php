@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class OrganizationUser extends Model
+{
+    protected $table = 'organization_users';
+
+    protected $fillable = [
+        'organization_id',
+        'user_id',
+        'org_role',
+        'status',
+        'invited_by_user_id',
+        'invitation_token',
+        'invitation_expires_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'invitation_expires_at' => 'datetime',
+        ];
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function invitedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'invited_by_user_id');
+    }
+}

@@ -7,7 +7,9 @@ use App\Http\Controllers\Admin\ApprovalController;
 use App\Http\Controllers\Admin\IpAllowlistController;
 use App\Http\Controllers\Admin\SecurityDashboardController;
 use App\Http\Controllers\Admin\WebhookController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Auth\RoleAuthController;
+use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,7 +27,11 @@ Route::get('/', function () {
 Route::get('login/{role}', [RoleAuthController::class, 'login'])->name('role.login');
 Route::get('register/{role}', [RoleAuthController::class, 'register'])->name('role.register');
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'permission:dashboard.read'])->group(function () {
+Route::post('organizations/switch', OrganizationSwitchController::class)
+    ->middleware(['auth', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])
+    ->name('organizations.switch');
+
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org', 'permission:dashboard.read'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
     Route::get('admin/dashboard', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
@@ -47,6 +53,12 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
     Route::delete('admin/security/allowlist/{entry}', [IpAllowlistController::class, 'destroy'])
         ->middleware('permission:security.ip_allowlist.manage')
         ->name('admin.security.allowlist.destroy');
+    Route::get('admin/settings', [SettingsController::class, 'index'])
+        ->middleware('permission:system.settings.view')
+        ->name('admin.settings');
+    Route::patch('admin/settings', [SettingsController::class, 'update'])
+        ->middleware('permission:system.settings.update')
+        ->name('admin.settings.update');
     Route::get('admin/webhooks', [WebhookController::class, 'index'])
         ->middleware('permission:webhooks.view')
         ->name('admin.webhooks');

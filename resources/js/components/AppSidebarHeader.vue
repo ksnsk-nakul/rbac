@@ -1,7 +1,19 @@
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
+import { Search } from 'lucide-vue-next';
+import { computed } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
+import UserMenuContent from '@/components/UserMenuContent.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { getInitials } from '@/composables/useInitials';
 import type { BreadcrumbItem } from '@/types';
 
 withDefaults(
@@ -12,6 +24,9 @@ withDefaults(
         breadcrumbs: () => [],
     },
 );
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
 </script>
 
 <template>
@@ -24,8 +39,27 @@ withDefaults(
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
-        <div class="flex">
+        <div class="flex items-center gap-3">
+            <div class="relative hidden w-72 items-center md:flex">
+                <Search class="absolute left-3 size-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search anything..."
+                    class="pl-9"
+                />
+            </div>
             <AppearanceTabs />
+            <DropdownMenu>
+                <DropdownMenuTrigger class="inline-flex items-center">
+                    <Avatar class="size-9">
+                        <AvatarImage :src="user?.avatar" :alt="user?.name" />
+                        <AvatarFallback>{{ getInitials(user?.name) }}</AvatarFallback>
+                    </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent class="min-w-56" align="end" :side-offset="8">
+                    <UserMenuContent v-if="user" :user="user" />
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     </header>
 </template>

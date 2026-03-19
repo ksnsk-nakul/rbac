@@ -3,6 +3,8 @@
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\TrackLastVisited;
+use App\Http\Middleware\EnsureOrganizationSelected;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AssignRequestId::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
+            TrackLastVisited::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
@@ -31,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.not.deleted' => \App\Http\Middleware\EnsureUserNotDeleted::class,
             'ensure.mfa' => \App\Http\Middleware\EnsureMfaEnrollment::class,
             'ensure.ip_allowlist' => \App\Http\Middleware\EnsureIpAllowed::class,
+            'ensure.org' => EnsureOrganizationSelected::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

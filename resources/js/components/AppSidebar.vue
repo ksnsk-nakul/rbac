@@ -100,6 +100,13 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: Map,
         });
     }
+    if (hasPermission('system.settings.view')) {
+        items.push({
+            title: 'App settings',
+            href: '/admin/settings',
+            icon: ShieldCheck,
+        });
+    }
     if (hasPermission('webhooks.view')) {
         items.push({
             title: 'Webhooks',

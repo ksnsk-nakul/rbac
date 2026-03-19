@@ -6,7 +6,13 @@ use App\Models\Plan;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\RoleTemplate;
+use App\Models\Organization;
+use App\Models\OrganizationUser;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class RoleSeeder extends Seeder
 {
@@ -129,6 +135,43 @@ class RoleSeeder extends Seeder
 
             $permissionIds = Permission::whereIn('slug', $template['permissions'])->pluck('id')->all();
             $roleTemplate->permissions()->sync($permissionIds);
+        }
+
+        $starterPlan = Plan::where('slug', 'starter')->first();
+
+        if (filter_var(env('SEED_DEMO_ADMIN', false), FILTER_VALIDATE_BOOL)) {
+            $demoEmail = (string) env('DEMO_ADMIN_EMAIL', 'admin@admin.com');
+            $demoPassword = (string) env('DEMO_ADMIN_PASSWORD', '1234567890');
+
+            $demoUser = User::firstOrCreate(
+                ['email' => $demoEmail, 'role_id' => $superAdminRole->id],
+                [
+                    'name' => 'Super Admin',
+                    'password' => Hash::make($demoPassword),
+                    'plan_id' => $starterPlan?->id,
+                ]
+            );
+
+            if (Schema::hasTable('organizations') && Schema::hasTable('organization_users')) {
+                $org = Organization::firstOrCreate(
+                    ['owner_user_id' => $demoUser->id],
+                    [
+                        'name' => 'Demo Organization',
+                        'slug' => 'demo-'.Str::lower(Str::random(6)),
+                        'plan_id' => $starterPlan?->id,
+                        'billing_provider' => null,
+                    ]
+                );
+
+                OrganizationUser::firstOrCreate(
+                    ['organization_id' => $org->id, 'user_id' => $demoUser->id],
+                    ['org_role' => 'owner', 'status' => 'active']
+                );
+
+                if (! $demoUser->current_organization_id) {
+                    $demoUser->forceFill(['current_organization_id' => $org->id])->save();
+                }
+            }
         }
     }
 }

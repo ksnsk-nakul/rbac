@@ -17,7 +17,7 @@ defineProps<{
     canRegister: boolean;
 }>();
 
-const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
+const tone = 'bg-[color:var(--accent)] text-foreground';
 </script>
 
 <template>
@@ -33,7 +33,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
         </div>
 
         <div class="mb-4 grid grid-cols-2 overflow-hidden rounded-full bg-muted text-sm">
-            <button class="bg-orange-500 px-4 py-2 font-medium text-white">
+            <button class="bg-primary px-4 py-2 font-medium text-primary-foreground">
                 Login
             </button>
             <a
@@ -75,7 +75,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
                         <TextLink
                             v-if="canResetPassword"
                             :href="request()"
-                            class="text-sm text-orange-600 hover:underline"
+                            class="text-sm text-primary hover:underline"
                         >
                             Forgot password?
                         </TextLink>
@@ -101,7 +101,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full bg-orange-500 text-white hover:bg-orange-600"
+                    class="mt-2 w-full"
                     :tabindex="4"
                     :disabled="processing"
                     data-test="login-button"
@@ -114,7 +114,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
 
         <div class="mt-6 text-center text-sm text-muted-foreground">
             Are you an administrator?
-            <a href="/admin/login" class="text-orange-600 hover:underline">I am admin</a>
+            <a href="/admin/login" class="text-primary hover:underline">I am admin</a>
         </div>
     </AuthSplitLayout>
 </template>

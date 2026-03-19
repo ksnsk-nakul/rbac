@@ -72,7 +72,15 @@ FLUSH PRIVILEGES;
 Run migrations:
 
 ```bash
-php artisan migrate --force
+php artisan migrate --force --seed
+```
+
+Optional demo admin (local only):
+
+```env
+SEED_DEMO_ADMIN=true
+DEMO_ADMIN_EMAIL=admin@admin.com
+DEMO_ADMIN_PASSWORD=1234567890
 ```
 
 Set Laravel permissions:
@@ -176,7 +184,7 @@ Install dependencies and run migrations:
 
 ```bash
 docker compose exec app composer install
-docker compose exec app php artisan migrate
+docker compose exec app php artisan migrate --seed
 ```
 
 ### 2.2 Docker parameters and purpose

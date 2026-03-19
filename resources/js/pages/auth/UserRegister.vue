@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/spinner';
 import AuthSplitLayout from '@/layouts/auth/AuthSplitLayout.vue';
 import { store } from '@/routes/register';
 
-const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
+const tone = 'bg-[color:var(--accent)] text-foreground';
 </script>
 
 <template>
@@ -26,7 +26,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
             >
                 Login
             </a>
-            <button class="bg-orange-500 px-4 py-2 font-medium text-white">
+            <button class="bg-primary px-4 py-2 font-medium text-primary-foreground">
                 Register
             </button>
         </div>
@@ -98,7 +98,7 @@ const tone = 'bg-orange-500/15 dark:bg-orange-500/10';
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full bg-orange-500 text-white hover:bg-orange-600"
+                    class="mt-2 w-full"
                     tabindex="5"
                     :disabled="processing"
                     data-test="register-user-button"

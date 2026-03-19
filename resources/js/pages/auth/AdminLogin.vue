@@ -13,7 +13,7 @@ const props = defineProps<{
     role?: 'admin' | 'subadmin';
 }>();
 
-const tone = 'bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100';
+const tone = 'bg-[color:var(--accent)] text-foreground';
 </script>
 
 <template>

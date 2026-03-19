@@ -18,8 +18,7 @@ class RoleManagementController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/management/Roles', [
-            'roles' => Role::with('permissions')->orderBy('name')->get(),
-            'permissions' => Permission::orderBy('name')->get(),
+            'roles' => Role::orderBy('name')->get(),
         ]);
     }
 
@@ -31,8 +30,6 @@ class RoleManagementController extends Controller
             'slug' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,slug'],
             'route' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,route'],
             'is_default' => ['sometimes', 'boolean'],
-            'permissions' => ['array'],
-            'permissions.*' => ['integer', 'exists:permissions,id'],
         ]);
 
         if ($user && ApprovalService::requiresApproval($user)) {
@@ -49,21 +46,17 @@ class RoleManagementController extends Controller
             'is_default' => $validated['is_default'] ?? false,
         ]);
 
-        $role->permissions()->sync($validated['permissions'] ?? []);
-
         if ($role->is_default) {
             Role::where('id', '!=', $role->id)->update(['is_default' => false]);
         }
 
         ActivityLogger::log('role.created', $role, 'Role created');
-        ActivityLogger::log('permissions.assigned', $role, 'Permissions assigned');
 
         AuditLogger::log(
             'role.created',
             'role',
             $role,
-            'Role created',
-            ['permissions' => $validated['permissions'] ?? []]
+            'Role created'
         );
 
         return back()->with('status', 'Role created.');
@@ -77,8 +70,6 @@ class RoleManagementController extends Controller
             'slug' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,slug,'.$role->id],
             'route' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,route,'.$role->id],
             'is_default' => ['sometimes', 'boolean'],
-            'permissions' => ['array'],
-            'permissions.*' => ['integer', 'exists:permissions,id'],
         ]);
 
         if ($user && ApprovalService::requiresApproval($user)) {
@@ -94,24 +85,50 @@ class RoleManagementController extends Controller
             'is_default' => $validated['is_default'] ?? false,
         ]);
 
-        $role->permissions()->sync($validated['permissions'] ?? []);
-
         if ($role->is_default) {
             Role::where('id', '!=', $role->id)->update(['is_default' => false]);
         }
 
         ActivityLogger::log('role.updated', $role, 'Role updated');
-        ActivityLogger::log('permissions.changed', $role, 'Permissions updated');
 
         AuditLogger::log(
             'role.updated',
             'role',
             $role,
-            'Role updated',
-            ['permissions' => $validated['permissions'] ?? []]
+            'Role updated'
         );
 
         return back()->with('status', 'Role updated.');
+    }
+
+    public function permissions(Role $role): Response
+    {
+        return Inertia::render('admin/management/RolePermissions', [
+            'role' => $role->load('permissions'),
+            'permissions' => Permission::orderBy('main_group')->orderBy('name')->get(),
+        ]);
+    }
+
+    public function updatePermissions(Request $request, Role $role): RedirectResponse
+    {
+        $validated = $request->validate([
+            'permissions' => ['array'],
+            'permissions.*' => ['integer', 'exists:permissions,id'],
+        ]);
+
+        $role->permissions()->sync($validated['permissions'] ?? []);
+
+        ActivityLogger::log('permissions.changed', $role, 'Permissions updated');
+
+        AuditLogger::log(
+            'permissions.changed',
+            'role',
+            $role,
+            'Permissions updated',
+            ['permissions' => $validated['permissions'] ?? []]
+        );
+
+        return back()->with('status', 'Permissions updated.');
     }
 
     public function destroy(Role $role): RedirectResponse

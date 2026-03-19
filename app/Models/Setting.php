@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -24,6 +25,15 @@ class Setting extends Model
         $setting = static::where('key', $key)->first();
 
         return $setting?->value ?? $default;
+    }
+
+    public static function getValueSafe(string $key, mixed $default = null): mixed
+    {
+        if (! Schema::hasTable('settings')) {
+            return $default;
+        }
+
+        return static::getValue($key, $default);
     }
 
     public static function setValue(string $key, mixed $value, string $group): void

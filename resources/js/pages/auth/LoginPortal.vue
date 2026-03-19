@@ -44,9 +44,7 @@ const showDemo = computed(
     () => !!demoCredentials.value && ['admin', 'subadmin'].includes(props.portal)
 );
 
-const tone = computed(() => {
-    return 'bg-slate-50 dark:bg-slate-900/40';
-});
+const tone = computed(() => 'bg-[color:var(--accent)] text-foreground');
 </script>
 
 <template>

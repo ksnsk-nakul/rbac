@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -11,6 +12,23 @@ use Tests\TestCase;
 class TwoFactorChallengeTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(
+            ['slug' => 'user'],
+            [
+                'name' => 'User',
+                'route' => 'user',
+                'is_subadmin' => false,
+                'is_default' => true,
+                'mfa_required' => false,
+                'require_ip_allowlist' => false,
+            ]
+        );
+    }
 
     public function test_two_factor_challenge_redirects_to_login_when_not_authenticated(): void
     {
@@ -34,7 +52,8 @@ class TwoFactorChallengeTest extends TestCase
             'confirmPassword' => true,
         ]);
 
-        $user = User::factory()->create();
+        $role = Role::where('slug', 'user')->firstOrFail();
+        $user = User::factory()->create(['role_id' => $role->id]);
 
         $user->forceFill([
             'two_factor_secret' => encrypt('test-secret'),

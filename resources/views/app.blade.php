@@ -30,19 +30,73 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        @php
+            $appName = \App\Models\Setting::getValueSafe('system.app_name', config('app.name', 'Laravel'));
+            $appFavicon = \App\Models\Setting::getValueSafe('system.app_favicon', null);
+            $defaultTheme = \App\Models\Setting::getValueSafe('system.theme_default', 'system');
+            $themeColor = \App\Models\Setting::getValueSafe('system.theme_color', '#f97316');
+        @endphp
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        <title inertia>{{ $appName }}</title>
+
+        @if($appFavicon)
+            <link rel="icon" href="{{ asset('storage/'.$appFavicon) }}" sizes="any">
+        @else
+            <link rel="icon" href="/favicon.ico" sizes="any">
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+        @endif
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+        <script>
+            window.__APP_SETTINGS__ = {
+                appName: @json($appName),
+                themeDefault: @json($defaultTheme),
+                themeColor: @json($themeColor),
+            };
+        </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-        @vite(['resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
+        @vite(['resources/js/app.js', "resources/js/pages/{$page['component']}.vue"])
         @inertiaHead
+
+        <style>
+            :root {
+                --brand: {{ $themeColor }};
+                --color-primary: var(--brand);
+                --color-primary-hover: color-mix(in srgb, var(--brand) 85%, black);
+                --color-primary-light: color-mix(in srgb, var(--brand) 15%, white);
+                --primary: var(--color-primary);
+                --primary-foreground: #ffffff;
+                --accent: color-mix(in srgb, var(--brand) 14%, white);
+                --accent-foreground: hsl(0 0% 9%);
+                --ring: var(--color-primary);
+                --sidebar-primary: var(--color-primary);
+                --sidebar-primary-foreground: #ffffff;
+                --sidebar-accent: color-mix(in srgb, var(--brand) 12%, white);
+                --sidebar-accent-foreground: hsl(0 0% 20%);
+                --sidebar-ring: var(--color-primary);
+            }
+            .dark {
+                --brand: {{ $themeColor }};
+                --color-primary: var(--brand);
+                --color-primary-hover: color-mix(in srgb, var(--brand) 80%, black);
+                --color-primary-light: color-mix(in srgb, var(--brand) 20%, black);
+                --primary: var(--color-primary);
+                --primary-foreground: #ffffff;
+                --accent: color-mix(in srgb, var(--brand) 18%, black);
+                --accent-foreground: #ffffff;
+                --ring: var(--color-primary);
+                --sidebar-primary: var(--color-primary);
+                --sidebar-primary-foreground: #ffffff;
+                --sidebar-accent: color-mix(in srgb, var(--brand) 20%, black);
+                --sidebar-accent-foreground: #ffffff;
+                --sidebar-ring: var(--color-primary);
+            }
+        </style>
     </head>
     <body class="font-sans antialiased">
-        @inertia
+        <div id="app" data-page="{{ json_encode($page) }}"></div>
     </body>
 </html>

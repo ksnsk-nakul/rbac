@@ -17,14 +17,12 @@ const roles = [
         description: 'Access general features and your personal dashboard.',
         login: '/user/login',
         register: '/user/register',
-        color: 'bg-orange-50 dark:bg-orange-950/30',
     },
     {
         key: 'admin',
         title: 'Admin',
         description: 'Access the management portal.',
         login: '/admin/login',
-        color: 'bg-slate-50 dark:bg-slate-900/40',
     },
 ];
 </script>
@@ -44,8 +42,7 @@ const roles = [
                 <div
                     v-for="role in roles"
                     :key="role.key"
-                    class="rounded-xl border border-border p-5 shadow-sm"
-                    :class="role.color"
+                    class="rounded-xl border border-border bg-[color:var(--accent)] p-5 shadow-sm"
                 >
                     <div class="text-lg font-semibold">{{ role.title }}</div>
                     <p class="mt-1 text-sm text-muted-foreground">
@@ -54,14 +51,14 @@ const roles = [
                     <div class="mt-4 flex flex-wrap gap-3">
                         <Link
                             :href="role.login"
-                            class="rounded-md bg-foreground px-3 py-1.5 text-sm text-background"
+                            class="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"
                         >
                             Sign in
                         </Link>
                         <Link
                             v-if="props.canRegister && role.register"
                             :href="role.register"
-                            class="rounded-md border border-foreground/20 px-3 py-1.5 text-sm"
+                            class="rounded-md border border-primary/30 px-3 py-1.5 text-sm text-primary"
                         >
                             Register
                         </Link>

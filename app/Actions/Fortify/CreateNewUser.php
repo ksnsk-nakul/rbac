@@ -4,8 +4,11 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Models\Organization;
+use App\Models\OrganizationUser;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
@@ -58,12 +61,35 @@ class CreateNewUser implements CreatesNewUsers
             ],
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
             'role_id' => $role->id,
         ]);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('organizations')) {
+            $orgName = trim($input['organization_name'] ?? '') ?: "{$user->name}'s Workspace";
+            $orgSlug = Str::slug($orgName).'-'.Str::lower(Str::random(6));
+
+            $organization = Organization::create([
+                'name' => $orgName,
+                'slug' => $orgSlug,
+                'owner_user_id' => $user->id,
+                'plan_id' => null,
+            ]);
+
+            OrganizationUser::create([
+                'organization_id' => $organization->id,
+                'user_id' => $user->id,
+                'org_role' => 'owner',
+                'status' => 'active',
+            ]);
+
+            $user->forceFill(['current_organization_id' => $organization->id])->save();
+        }
+
+        return $user;
     }
 
     private function resolveRole(?string $roleInput): ?Role

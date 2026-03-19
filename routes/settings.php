@@ -10,7 +10,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist'])->group(function () {
+Route::middleware(['auth', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])->group(function () {
     Route::redirect('settings', '/account/settings/profile');
     Route::redirect('settings/profile', '/account/settings/profile');
     Route::redirect('settings/password', '/account/settings/security');
@@ -21,7 +21,7 @@ Route::middleware(['auth', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowl
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist'])->group(function () {
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])->group(function () {
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('user-password.edit');
@@ -34,7 +34,7 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
 
 });
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist'])->prefix('account/settings')->name('account.settings.')->group(function () {
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])->prefix('account/settings')->name('account.settings.')->group(function () {
     Route::get('profile', [AccountProfileController::class, 'edit'])->name('profile');
     Route::patch('profile', [AccountProfileController::class, 'update'])->name('profile.update');
 

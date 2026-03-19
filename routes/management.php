@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\RoleTemplateController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist'])->prefix('admin/management')->name('admin.management.')->group(function () {
+Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensure.ip_allowlist', 'ensure.org'])->prefix('admin/management')->name('admin.management.')->group(function () {
     Route::middleware('permission:roles.view')->group(function () {
         Route::inertia('/', 'admin/management/Portal')->name('portal');
     });
@@ -24,14 +24,20 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
         ->middleware('permission:roles.view')
         ->name('roles.index');
     Route::post('roles', [RoleManagementController::class, 'store'])
-        ->middleware(['permission:roles.create', 'permission:permissions.assign'])
+        ->middleware('permission:roles.create')
         ->name('roles.store');
     Route::put('roles/{role}', [RoleManagementController::class, 'update'])
-        ->middleware(['permission:roles.edit', 'permission:permissions.assign'])
+        ->middleware('permission:roles.edit')
         ->name('roles.update');
     Route::delete('roles/{role}', [RoleManagementController::class, 'destroy'])
         ->middleware('permission:roles.delete')
         ->name('roles.destroy');
+    Route::get('roles/{role}/permissions', [RoleManagementController::class, 'permissions'])
+        ->middleware('permission:permissions.view')
+        ->name('roles.permissions');
+    Route::put('roles/{role}/permissions', [RoleManagementController::class, 'updatePermissions'])
+        ->middleware('permission:permissions.assign')
+        ->name('roles.permissions.update');
 
     Route::get('role-templates', [RoleTemplateController::class, 'index'])
         ->middleware('permission:templates.view')

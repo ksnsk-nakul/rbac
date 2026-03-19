@@ -17,6 +17,10 @@ class EnsureMfaEnrollment
             return $next($request);
         }
 
+        if ($request->is('account/settings/security') || $request->is('account/settings/security/*')) {
+            return $next($request);
+        }
+
         $role = $user->currentRole();
 
         if ($role && $role->mfa_required && PlanGate::allows($user, 'mfa_enforcement')) {

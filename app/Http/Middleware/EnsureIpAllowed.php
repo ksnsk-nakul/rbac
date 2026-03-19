@@ -16,6 +16,10 @@ class EnsureIpAllowed
             return $next($request);
         }
 
+        if ($request->is('account/settings/security') || $request->is('account/settings/security/*')) {
+            return $next($request);
+        }
+
         $role = $user->currentRole();
 
         if ($role && $role->require_ip_allowlist) {

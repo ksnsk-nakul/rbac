@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -9,20 +9,16 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
-type Permission = { id: number; name: string; slug: string };
-
 type Role = {
     id: number;
     name: string;
     slug: string;
     route: string;
     is_default: boolean;
-    permissions: Permission[];
 };
 
 const props = defineProps<{
     roles: Role[];
-    permissions: Permission[];
 }>();
 
 const page = usePage();
@@ -103,24 +99,6 @@ const breadcrumbs: BreadcrumbItem[] = [
                         />
                         <Label for="is_default">Set as default role</Label>
                     </div>
-                    <div class="grid gap-2">
-                        <Label>Permissions</Label>
-                        <div class="flex flex-wrap gap-2">
-                            <label
-                                v-for="permission in props.permissions"
-                                :key="permission.id"
-                                class="flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
-                            >
-                                <input
-                                    type="checkbox"
-                                    name="permissions[]"
-                                    :value="permission.id"
-                                />
-                                {{ permission.name }}
-                            </label>
-                        </div>
-                        <InputError :message="errors.permissions" />
-                    </div>
                     <Button type="submit" :disabled="processing"
                         >Create role</Button
                     >
@@ -129,83 +107,50 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <section class="space-y-4">
                 <h3 class="font-medium">Existing roles</h3>
-                <div class="grid gap-4">
-                    <div
-                        v-for="role in props.roles"
-                        :key="role.id"
-                        class="rounded-lg border p-4"
-                    >
-                        <Form
-                            :action="`/admin/management/roles/${role.id}`"
-                            method="post"
-                            class="grid gap-3"
-                            v-slot="{ errors, processing }"
-                        >
-                            <input type="hidden" name="_method" value="put" />
-                            <div class="grid gap-2">
-                                <Label>Role name</Label>
-                                <Input :name="`name`" :default-value="role.name" />
-                                <InputError :message="errors.name" />
-                            </div>
-                            <div class="grid gap-2">
-                                <Label>Role slug</Label>
-                                <Input :name="`slug`" :default-value="role.slug" />
-                                <InputError :message="errors.slug" />
-                            </div>
-                            <div class="grid gap-2">
-                                <Label>Login route</Label>
-                                <p class="text-xs text-muted-foreground">
-                                    Example: login/{route} and register/{route}
-                                </p>
-                                <Input :name="`route`" :default-value="role.route" />
-                                <InputError :message="errors.route" />
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <input
-                                    :id="`is_default_${role.id}`"
-                                    name="is_default"
-                                    type="checkbox"
-                                    value="1"
-                                    :checked="role.is_default"
-                                />
-                                <Label :for="`is_default_${role.id}`">Default role</Label>
-                            </div>
-                            <div class="grid gap-2">
-                                <Label>Permissions</Label>
-                                <div class="flex flex-wrap gap-2">
-                                    <label
-                                        v-for="permission in props.permissions"
-                                        :key="permission.id"
-                                        class="flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="permissions[]"
-                                            :value="permission.id"
-                                            :checked="role.permissions.some((p) => p.id === permission.id)"
-                                        />
-                                        {{ permission.name }}
-                                    </label>
-                                </div>
-                                <InputError :message="errors.permissions" />
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <Button type="submit" :disabled="processing"
-                                    >Update role</Button
-                                >
-                            </div>
-                        </Form>
-                        <Form
-                            :action="`/admin/management/roles/${role.id}`"
-                            method="post"
-                            class="mt-3"
-                        >
-                            <input type="hidden" name="_method" value="delete" />
-                            <Button type="submit" variant="destructive" size="sm">
-                                Delete
-                            </Button>
-                        </Form>
-                    </div>
+                <div class="rounded-lg border">
+                    <table class="w-full text-left text-sm">
+                        <thead class="border-b bg-muted/50">
+                            <tr>
+                                <th class="px-4 py-3 font-medium">Name</th>
+                                <th class="px-4 py-3 font-medium">Slug</th>
+                                <th class="px-4 py-3 font-medium">Route</th>
+                                <th class="px-4 py-3 font-medium">Default</th>
+                                <th class="px-4 py-3 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="role in props.roles" :key="role.id" class="border-b last:border-0">
+                                <td class="px-4 py-3">{{ role.name }}</td>
+                                <td class="px-4 py-3">{{ role.slug }}</td>
+                                <td class="px-4 py-3">{{ role.route }}</td>
+                                <td class="px-4 py-3">{{ role.is_default ? 'Yes' : 'No' }}</td>
+                                <td class="px-4 py-3 text-right">
+                                    <div class="flex flex-wrap justify-end gap-2">
+                                        <Link
+                                            :href="`/admin/management/roles/${role.id}/permissions`"
+                                            class="rounded border px-3 py-1 text-xs"
+                                        >
+                                            Permissions
+                                        </Link>
+                                        <Form
+                                            :action="`/admin/management/roles/${role.id}`"
+                                            method="post"
+                                        >
+                                            <input type="hidden" name="_method" value="delete" />
+                                            <Button type="submit" variant="destructive" size="sm">
+                                                Delete
+                                            </Button>
+                                        </Form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="!props.roles.length">
+                                <td colspan="5" class="px-4 py-6 text-center text-sm text-muted-foreground">
+                                    No roles yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </div>
