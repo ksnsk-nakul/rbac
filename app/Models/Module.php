@@ -12,12 +12,17 @@ class Module extends Model
         'enabled',
         'version',
         'description',
+        'allowed_plans',
+        'requires_api_key',
+        'api_key_hash',
     ];
 
     protected function casts(): array
     {
         return [
             'enabled' => 'boolean',
+            'allowed_plans' => 'array',
+            'requires_api_key' => 'boolean',
         ];
     }
 }

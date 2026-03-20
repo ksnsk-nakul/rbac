@@ -130,6 +130,7 @@ class HandleInertiaRequests extends Middleware
             'flash' => [
                 'status' => fn () => $request->session()->get('status'),
                 'checkout' => fn () => $request->session()->get('checkout'),
+                'addonApiKey' => fn () => $request->session()->get('addon_api_key'),
             ],
         ];
     }

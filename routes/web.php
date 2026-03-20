@@ -97,6 +97,15 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
     Route::patch('admin/modules/{module}', [ModulesController::class, 'update'])
         ->middleware('permission:modules.manage')
         ->name('admin.modules.update');
+    Route::post('admin/modules/install', [ModulesController::class, 'install'])
+        ->middleware('permission:modules.manage')
+        ->name('admin.modules.install');
+    Route::delete('admin/modules/{module}', [ModulesController::class, 'uninstall'])
+        ->middleware('permission:modules.manage')
+        ->name('admin.modules.uninstall');
+    Route::post('admin/modules/addon-key', [ModulesController::class, 'regenerateAddonKey'])
+        ->middleware('permission:modules.manage')
+        ->name('admin.modules.addon-key');
     Route::get('admin/approvals', [ApprovalController::class, 'index'])
         ->middleware('permission:approvals.view')
         ->name('admin.approvals');

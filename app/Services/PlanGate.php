@@ -19,6 +19,10 @@ class PlanGate
 
     public static function allows(?User $user, string $feature): bool
     {
+        if (filter_var(env('FEATURES_ALL', false), FILTER_VALIDATE_BOOL)) {
+            return true;
+        }
+
         $plan = self::forUser($user);
 
         if (!$plan) {

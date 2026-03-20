@@ -16,6 +16,7 @@ class Organization extends Model
         'plan_id',
         'billing_provider',
         'razorpay_customer_id',
+        'addon_api_key_hash',
     ];
 
     public function owner(): BelongsTo
