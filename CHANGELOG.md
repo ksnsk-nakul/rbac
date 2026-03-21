@@ -6,7 +6,7 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 ## [Unreleased]
 
-## [1.0.0] - 2026-03-19
+## [1.0.0] - 2026-03-21
 
 Initial commercial release.
 
@@ -20,5 +20,7 @@ Initial commercial release.
 - Billing MVP (Razorpay subscriptions + webhook sync)
 - Support tickets (account tickets + admin inbox)
 - Optional license enforcement middleware
+- Modules manager with zip-based add-on installer (base hub ships with no modules preinstalled)
+- Admin/user listings with global query filtering and list/grid views
+- Global top search that filters the sidebar menu
 - Documentation set in `docs/`
-
