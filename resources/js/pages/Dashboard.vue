@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { computed, reactive } from 'vue';
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import type { BreadcrumbItem } from '@/types';
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+];
 
 const form = reactive({
     name: '',
@@ -31,14 +36,14 @@ const canSubmit = computed(() => Object.keys(errors.value).length === 0);
 </script>
 
 <template>
-    <DashboardLayout>
+    <AppLayout :breadcrumbs="breadcrumbs">
         <Head title="Dashboard" />
 
         <div class="space-y-8">
             <div>
                 <h1 class="text-2xl font-semibold">Overview</h1>
                 <p class="text-sm text-muted-foreground">
-                    Track growth, revenue, and team activity in one place.
+                    RBAC overview and recent platform activity.
                 </p>
             </div>
 
@@ -167,5 +172,5 @@ const canSubmit = computed(() => Object.keys(errors.value).length === 0);
                 </section>
             </div>
         </div>
-    </DashboardLayout>
+    </AppLayout>
 </template>

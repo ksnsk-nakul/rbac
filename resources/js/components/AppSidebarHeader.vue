@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { getInitials } from '@/composables/useInitials';
+import { navSearchQuery } from '@/composables/useNavSearch';
 import type { BreadcrumbItem } from '@/types';
 
 withDefaults(
@@ -44,7 +45,8 @@ const user = computed(() => page.props.auth?.user);
                 <Search class="absolute left-3 size-4 text-muted-foreground" />
                 <Input
                     type="search"
-                    placeholder="Search anything..."
+                    v-model="navSearchQuery"
+                    placeholder="Search menu..."
                     class="pl-9"
                 />
             </div>

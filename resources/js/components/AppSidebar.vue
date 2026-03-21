@@ -6,6 +6,7 @@ import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
+import { navSearchQuery } from '@/composables/useNavSearch';
 import {
     Sidebar,
     SidebarContent,
@@ -27,6 +28,7 @@ type PageProps = {
         };
         permissions?: string[];
     };
+    moduleNav?: { title: string; href: string; permission?: string | null }[];
 };
 
 const page = usePage<PageProps>();
@@ -35,6 +37,17 @@ const roleSlug = computed(() => page.props.auth?.user?.role?.slug);
 const dashboardHref = computed(() => (roleSlug.value === 'super_admin' ? '/admin/dashboard' : dashboard()));
 const hasPermission = (permission: string) =>
     permissions.value.includes('*') || permissions.value.includes(permission);
+
+const moduleNavItems = computed<NavItem[]>(() => {
+    const items = page.props.moduleNav ?? [];
+    return items
+        .filter((i) => !i.permission || hasPermission(i.permission))
+        .map((i) => ({
+            title: i.title,
+            href: i.href,
+            icon: Package,
+        }));
+});
 
 const mainNavItems = computed<NavItem[]>(() => {
     const items: NavItem[] = [
@@ -142,7 +155,14 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: ShieldCheck,
         });
     }
-    return items;
+
+    return [...items, ...moduleNavItems.value];
+});
+
+const filteredNavItems = computed<NavItem[]>(() => {
+    const q = navSearchQuery.value.trim().toLowerCase();
+    if (!q) return mainNavItems.value;
+    return mainNavItems.value.filter((i) => i.title.toLowerCase().includes(q));
 });
 
 const footerNavItems: NavItem[] = [];
@@ -163,7 +183,7 @@ const footerNavItems: NavItem[] = [];
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="filteredNavItems" />
         </SidebarContent>
 
         <SidebarFooter>
