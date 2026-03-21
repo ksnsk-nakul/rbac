@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Filters\UserFilters;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
@@ -19,15 +20,28 @@ class ManagementController extends Controller
      */
     public function users(Request $request): Response
     {
-        $users = User::with('role')
-            ->orderBy('name')
-            ->paginate(15)
+        $query = User::query()
+            ->with('role')
+            ->withTrashed()
+            ->orderBy('name');
+
+        $filters = new UserFilters($request);
+        $query = $filters->apply($query);
+
+        $users = $query
+            ->paginate((int) $request->query('per_page', 15))
             ->withQueryString();
 
         return Inertia::render('admin/management/Users', [
             'users' => $users,
             'roleLabel' => 'Users',
             'roles' => Role::orderBy('name')->get(['id', 'name', 'slug']),
+            'filters' => [
+                'q' => (string) $request->query('q', ''),
+                'role' => $request->query('role'),
+                'status' => (string) $request->query('status', 'all'),
+                'view' => (string) $request->query('view', 'list'),
+            ],
         ]);
     }
 
