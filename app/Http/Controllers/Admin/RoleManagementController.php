@@ -32,6 +32,10 @@ class RoleManagementController extends Controller
             'is_default' => ['sometimes', 'boolean'],
         ]);
 
+        if ($validated['slug'] === 'super_admin') {
+            return back()->with('status', 'The super_admin role slug is reserved.');
+        }
+
         if ($user && ApprovalService::requiresApproval($user)) {
             ApprovalService::create('role.create', $validated, $user);
 
@@ -65,6 +69,11 @@ class RoleManagementController extends Controller
     public function update(Request $request, Role $role): RedirectResponse
     {
         $user = $request->user();
+
+        if ($role->slug === 'super_admin') {
+            return back()->with('status', 'Super Admin role cannot be modified.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'alpha_dash', 'unique:roles,slug,'.$role->id],
@@ -111,6 +120,10 @@ class RoleManagementController extends Controller
 
     public function updatePermissions(Request $request, Role $role): RedirectResponse
     {
+        if ($role->slug === 'super_admin') {
+            return back()->with('status', 'Super Admin permissions are implicit and cannot be edited.');
+        }
+
         $validated = $request->validate([
             'permissions' => ['array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
@@ -134,8 +147,12 @@ class RoleManagementController extends Controller
     public function destroy(Role $role): RedirectResponse
     {
         $user = request()->user();
-        if ($role->slug === 'admin') {
-            return back()->with('status', 'Admin role cannot be deleted.');
+        if ($role->slug === 'super_admin') {
+            return back()->with('status', 'Super Admin role cannot be deleted.');
+        }
+
+        if ($role->is_protected) {
+            return back()->with('status', 'This role is protected and cannot be deleted.');
         }
 
         if ($role->is_default) {

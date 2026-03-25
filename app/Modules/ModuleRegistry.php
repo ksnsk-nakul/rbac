@@ -39,6 +39,7 @@ class ModuleRegistry
                 version: $raw['version'] ?? null,
                 description: $raw['description'] ?? null,
                 provider: $raw['provider'] ?? null,
+                roles: $raw['roles'] ?? [],
                 permissions: $raw['permissions'] ?? [],
                 navigation: $raw['navigation'] ?? [],
                 defaultEnabled: (bool) ($raw['default_enabled'] ?? false),
@@ -134,8 +135,12 @@ class ModuleRegistry
                     [
                         'name' => $permission['name'] ?? $permission['slug'],
                         'main_group' => $permission['group'] ?? $manifest->slug,
+                        'is_protected' => true,
                     ],
                 );
+                if (! $record->is_protected) {
+                    $record->forceFill(['is_protected' => true])->save();
+                }
 
                 $permissionIds[] = $record->id;
             }
@@ -148,6 +153,49 @@ class ModuleRegistry
         $role = Role::where('slug', 'super_admin')->first();
         if ($role && $permissionIds !== []) {
             $role->permissions()->syncWithoutDetaching($permissionIds);
+        }
+    }
+
+    public function registerRoles(array $manifests): void
+    {
+        if (! Schema::hasTable('roles')) {
+            return;
+        }
+
+        foreach ($manifests as $manifest) {
+            foreach ($manifest->roles as $roleRaw) {
+                if (! isset($roleRaw['slug'], $roleRaw['route'])) {
+                    continue;
+                }
+
+                $slug = (string) $roleRaw['slug'];
+                $existing = Role::where('slug', $slug)->first();
+                if ($existing) {
+                    if (! $existing->is_protected) {
+                        $existing->forceFill(['is_protected' => true])->save();
+                    }
+                    continue;
+                }
+
+                Role::create([
+                    'name' => (string) ($roleRaw['name'] ?? $slug),
+                    'slug' => $slug,
+                    'route' => (string) $roleRaw['route'],
+                    'is_subadmin' => (bool) ($roleRaw['is_subadmin'] ?? false),
+                    'is_default' => (bool) ($roleRaw['is_default'] ?? false),
+                    'is_protected' => true,
+                ]);
+                $role = Role::where('slug', $slug)->first();
+                if ($role && Schema::hasTable('permissions') && isset($roleRaw['permissions']) && is_array($roleRaw['permissions'])) {
+                    $slugs = array_values(array_filter(array_map('strval', $roleRaw['permissions'])));
+                    if ($slugs !== []) {
+                        $ids = Permission::whereIn('slug', $slugs)->pluck('id')->all();
+                        if ($ids !== []) {
+                            $role->permissions()->syncWithoutDetaching($ids);
+                        }
+                    }
+                }
+            }
         }
     }
 

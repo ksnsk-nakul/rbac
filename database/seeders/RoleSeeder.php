@@ -28,9 +28,12 @@ class RoleSeeder extends Seeder
                 'is_subadmin' => false,
                 'route' => 'admin',
                 'is_default' => true,
+                'is_protected' => true,
                 'mfa_required' => true,
             ]
         );
+        // If it already existed before we introduced the column, ensure protection stays on.
+        $superAdminRole->forceFill(['is_protected' => true])->save();
 
         $permissions = [
             ['name' => 'Read dashboard', 'slug' => 'dashboard.read', 'main_group' => 'dashboard'],
@@ -74,10 +77,18 @@ class RoleSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate(
+            $record = Permission::firstOrCreate(
                 ['slug' => $permission['slug']],
-                ['name' => $permission['name'], 'main_group' => $permission['main_group']]
+                [
+                    'name' => $permission['name'],
+                    'main_group' => $permission['main_group'],
+                    'is_protected' => true,
+                ]
             );
+
+            if (! $record->is_protected) {
+                $record->forceFill(['is_protected' => true])->save();
+            }
         }
 
         $superAdminRole->permissions()->sync(Permission::pluck('id')->all());

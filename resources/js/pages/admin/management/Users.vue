@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, reactive, ref } from 'vue';
+import { computed, ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -30,21 +30,27 @@ const props = defineProps<{
     filters: { q: string; role: string | null; status: string; view: string };
 }>();
 
-const page = usePage();
+type PageProps = {
+    auth?: {
+        user?: { id: number };
+        permissions?: string[];
+    };
+    flash?: { status?: string };
+};
+
+const page = usePage<PageProps>();
 const status = computed(() => (page.props.flash as { status?: string } | undefined)?.status);
-const assignments = reactive<Record<number, { role_id: number | null; expires_at: string | null }>>({});
+const currentUserId = computed(() => page.props.auth?.user?.id);
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+const hasPermission = (permission: string) =>
+    permissions.value.includes('*') || permissions.value.includes(permission);
+const canRemoveUsers = computed(() => hasPermission('accounts.update'));
 const q = ref(props.filters.q ?? '');
 const role = ref(props.filters.role ?? '');
 const filterStatus = ref(props.filters.status ?? 'all');
 const view = ref(props.filters.view ?? 'list');
 const isGrid = computed(() => view.value === 'grid');
 
-props.users.data.forEach((user) => {
-    assignments[user.id] = {
-        role_id: user.role?.id ?? null,
-        expires_at: null,
-    };
-});
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Management', href: '/admin/management/users' },
@@ -54,19 +60,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 function destroy(userId: number) {
     if (!confirm('Remove this user? They will not be able to sign in or register again.')) return;
     router.delete(`/admin/management/users/${userId}`, { preserveScroll: true });
-}
-
-function submitAssignment(userId: number) {
-    const assignment = assignments[userId];
-    if (!assignment?.role_id) return;
-    router.post(
-        `/admin/management/users/${userId}/assign-role`,
-        {
-            role_id: assignment.role_id,
-            expires_at: assignment.expires_at || null,
-        },
-        { preserveScroll: true }
-    );
 }
 
 function applyFilters() {
@@ -161,7 +154,6 @@ function setView(v: 'list' | 'grid') {
                         <tr>
                             <th class="px-4 py-3 font-medium">Name</th>
                             <th class="px-4 py-3 font-medium">Email</th>
-                            <th class="px-4 py-3 font-medium">Temporary role</th>
                             <th class="w-[100px] px-4 py-3 font-medium">Actions</th>
                         </tr>
                     </thead>
@@ -170,28 +162,10 @@ function setView(v: 'list' | 'grid') {
                             <td class="px-4 py-3">{{ user.name }}</td>
                             <td class="px-4 py-3">{{ user.email }}</td>
                             <td class="px-4 py-3">
-                                <form class="flex flex-wrap items-center gap-2" @submit.prevent="submitAssignment(user.id)">
-                                    <select
-                                        v-model="assignments[user.id].role_id"
-                                        class="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                                    >
-                                        <option :value="null" disabled>Select role</option>
-                                        <option v-for="role in roles" :key="role.id" :value="role.id">
-                                            {{ role.name }}
-                                        </option>
-                                    </select>
-                                    <input
-                                        type="date"
-                                        v-model="assignments[user.id].expires_at"
-                                        class="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                                    />
-                                    <Button size="sm" variant="outline" type="submit">Assign</Button>
-                                </form>
-                            </td>
-                            <td class="px-4 py-3">
                                 <Button
                                     variant="destructive"
                                     size="sm"
+                                    :disabled="!canRemoveUsers || user.id === currentUserId"
                                     @click="destroy(user.id)"
                                 >
                                     Remove
@@ -214,26 +188,15 @@ function setView(v: 'list' | 'grid') {
                         </span>
                     </div>
 
-                    <form class="flex flex-wrap items-center gap-2" @submit.prevent="submitAssignment(user.id)">
-                        <select
-                            v-model="assignments[user.id].role_id"
-                            class="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                        >
-                            <option :value="null" disabled>Select role</option>
-                            <option v-for="r in roles" :key="r.id" :value="r.id">
-                                {{ r.name }}
-                            </option>
-                        </select>
-                        <input
-                            type="date"
-                            v-model="assignments[user.id].expires_at"
-                            class="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                        />
-                        <Button size="sm" variant="outline" type="submit">Assign</Button>
-                    </form>
-
                     <div class="pt-2">
-                        <Button variant="destructive" size="sm" @click="destroy(user.id)">Remove</Button>
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            :disabled="!canRemoveUsers || user.id === currentUserId"
+                            @click="destroy(user.id)"
+                        >
+                            Remove
+                        </Button>
                     </div>
                 </div>
             </div>

@@ -11,6 +11,7 @@ class ModuleManifest
         public ?string $version,
         public ?string $description,
         public ?string $provider,
+        public array $roles,
         public array $permissions,
         public array $navigation,
         public bool $defaultEnabled,

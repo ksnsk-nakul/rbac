@@ -11,6 +11,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const page = usePage();
 const permissions = computed(() => (page.props.auth as { permissions?: string[] } | undefined)?.permissions ?? []);
+const roleSlug = computed(() => (page.props.auth as { user?: { role?: { slug?: string } } } | undefined)?.user?.role?.slug);
 const hasPermission = (permission: string) =>
     permissions.value.includes('*') || permissions.value.includes(permission);
 
@@ -41,7 +42,7 @@ const cards = computed(() => {
         });
     }
 
-    if (hasPermission('audit.export')) {
+    if (roleSlug.value === 'super_admin' && hasPermission('audit.export')) {
         items.push({
             title: 'Activity log',
             description: 'Review login activity across all users.',

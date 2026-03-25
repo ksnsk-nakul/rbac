@@ -18,7 +18,7 @@ class AdminDashboardController extends Controller
         $user = $request->user()?->loadMissing('role.permissions');
         $canRoles = $user?->hasPermission('roles.view') ?? false;
         $canUsers = $user?->hasPermission('accounts.view') ?? false;
-        $canActivityAll = $user?->hasPermission('audit.export') ?? false;
+        $canActivityAll = ($user?->isAdmin() ?? false) && ($user?->hasPermission('audit.export') ?? false);
 
         $roles = $canRoles
             ? Role::with('permissions')

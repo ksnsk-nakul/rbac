@@ -16,9 +16,6 @@ Route::middleware(['auth', 'verified', 'ensure.not.deleted', 'ensure.mfa', 'ensu
     Route::delete('users/{user}', [ManagementController::class, 'destroy'])
         ->middleware('permission:accounts.update')
         ->name('users.destroy');
-    Route::post('users/{user}/assign-role', [ManagementController::class, 'assignRole'])
-        ->middleware('permission:roles.edit')
-        ->name('users.assign-role');
 
     Route::get('roles', [RoleManagementController::class, 'index'])
         ->middleware('permission:roles.view')

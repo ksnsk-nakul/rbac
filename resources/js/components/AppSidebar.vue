@@ -78,7 +78,7 @@ const mainNavItems = computed<NavItem[]>(() => {
             icon: Activity,
         });
     }
-    if (hasPermission('audit.export')) {
+    if (roleSlug.value === 'super_admin' && hasPermission('audit.export')) {
         items.push({
             title: 'Activity (all)',
             href: '/admin/activity',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
+use App\Repositories\Contracts\SupportTicketRepositoryInterface;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,27 +14,15 @@ use Inertia\Response;
 
 class SupportTicketController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, SupportTicketRepositoryInterface $ticketsRepo): Response
     {
         $user = $request->user();
-        $orgId = $user->current_organization_id;
 
         $status = $request->string('status')->toString();
         $status = $status !== '' ? $status : null;
 
-        $ticketsQuery = SupportTicket::query()
-            ->where('organization_id', $orgId)
-            ->with(['user:id,name,email'])
-            ->latest('last_message_at')
-            ->latest('id');
-
-        if ($status) {
-            $ticketsQuery->where('status', $status);
-        }
-
-        $tickets = $ticketsQuery
-            ->limit(200)
-            ->get()
+        $tickets = $ticketsRepo
+            ->listForAdmin($user, $status, 200)
             ->map(fn (SupportTicket $t) => [
                 'id' => $t->id,
                 'subject' => $t->subject,
@@ -154,4 +143,3 @@ class SupportTicketController extends Controller
         return redirect()->route('admin.support.show', $ticket);
     }
 }
-

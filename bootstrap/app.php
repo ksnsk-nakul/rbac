@@ -7,6 +7,7 @@ use App\Http\Middleware\TrackLastVisited;
 use App\Http\Middleware\EnsureOrganizationSelected;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\EnsureValidLicense;
+use App\Http\Middleware\EnsureModuleEnabled;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -39,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.ip_allowlist' => \App\Http\Middleware\EnsureIpAllowed::class,
             'ensure.org' => EnsureOrganizationSelected::class,
             'ensure.license' => EnsureValidLicense::class,
+            'ensure.module' => EnsureModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

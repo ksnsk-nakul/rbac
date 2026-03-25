@@ -18,6 +18,7 @@ class ModuleServiceProvider extends ServiceProvider
         try {
             $registry->syncDatabase();
             $registry->registerPermissions($registry->discover());
+            $registry->registerRoles($registry->discover());
             $enabled = $registry->enabled();
         } catch (\Throwable $e) {
             if ($this->app->runningInConsole()) {

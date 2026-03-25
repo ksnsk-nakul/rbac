@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Filters\UserFilters;
+use App\DTOs\Users\UserListCriteria;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\AuditLogger;
 use App\Services\PlanGate;
 use Illuminate\Http\RedirectResponse;
@@ -18,29 +19,33 @@ class ManagementController extends Controller
     /**
      * List users.
      */
-    public function users(Request $request): Response
+    public function users(Request $request, UserRepositoryInterface $usersRepo): Response
     {
-        $query = User::query()
-            ->with('role')
-            ->withTrashed()
-            ->orderBy('name');
+        $actor = $request->user();
 
-        $filters = new UserFilters($request);
-        $query = $filters->apply($query);
+        $criteria = new UserListCriteria(
+            q: (string) $request->query('q', ''),
+            role: ($request->query('role') !== null && (string) $request->query('role') !== '') ? (string) $request->query('role') : null,
+            status: (string) $request->query('status', 'all'),
+            sort: (string) $request->query('sort', 'name'),
+            dir: (string) $request->query('dir', 'asc'),
+            perPage: (int) $request->query('per_page', 15),
+            view: (string) $request->query('view', 'list'),
+        );
 
-        $users = $query
-            ->paginate((int) $request->query('per_page', 15))
-            ->withQueryString();
+        $users = $usersRepo
+            ->paginateForAdminManagement($actor, $criteria)
+            ->appends($request->query());
 
         return Inertia::render('admin/management/Users', [
             'users' => $users,
             'roleLabel' => 'Users',
             'roles' => Role::orderBy('name')->get(['id', 'name', 'slug']),
             'filters' => [
-                'q' => (string) $request->query('q', ''),
-                'role' => $request->query('role'),
-                'status' => (string) $request->query('status', 'all'),
-                'view' => (string) $request->query('view', 'list'),
+                'q' => $criteria->q,
+                'role' => $criteria->role,
+                'status' => $criteria->status,
+                'view' => $criteria->view,
             ],
         ]);
     }
@@ -51,6 +56,10 @@ class ManagementController extends Controller
      */
     public function destroy(Request $request, User $user): RedirectResponse
     {
+        if ($request->user()?->is($user)) {
+            return back()->with('status', 'You cannot remove your own account.');
+        }
+
         if ($user->isAdmin()) {
             abort(403, 'Cannot remove an admin.');
         }
@@ -64,6 +73,8 @@ class ManagementController extends Controller
 
     public function assignRole(Request $request, User $user): RedirectResponse
     {
+        abort(403, 'Temporary role assignment is disabled.');
+
         $validated = $request->validate([
             'role_id' => ['required', 'exists:roles,id'],
             'expires_at' => ['nullable', 'date'],

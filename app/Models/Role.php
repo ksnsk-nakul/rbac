@@ -14,6 +14,7 @@ class Role extends Model
         'is_subadmin',
         'route',
         'is_default',
+        'is_protected',
         'mfa_required',
         'require_ip_allowlist',
     ];
@@ -23,9 +24,19 @@ class Role extends Model
         return [
             'is_subadmin' => 'boolean',
             'is_default' => 'boolean',
+            'is_protected' => 'boolean',
             'mfa_required' => 'boolean',
             'require_ip_allowlist' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleting(function (Role $role): void {
+            if ($role->is_protected) {
+                throw new \RuntimeException('Protected roles cannot be deleted.');
+            }
+        });
     }
 
     public function users(): HasMany

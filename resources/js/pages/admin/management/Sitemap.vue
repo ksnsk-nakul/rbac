@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { computed } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -9,7 +10,21 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Sitemap', href: '/admin/management/sitemap' },
 ];
 
-const sections = [
+type LinkItem = { label: string; href: string; permission?: string };
+
+type PageProps = {
+    auth?: {
+        permissions?: string[];
+    };
+};
+
+const page = usePage<PageProps>();
+const permissions = computed(() => page.props.auth?.permissions ?? []);
+const hasPermission = (permission: string) =>
+    permissions.value.includes('*') || permissions.value.includes(permission);
+const roleSlug = computed(() => (page.props.auth as { user?: { role?: { slug?: string } } } | undefined)?.user?.role?.slug);
+
+const sections = computed(() => [
     {
         title: 'Auth',
         links: [
@@ -20,28 +35,34 @@ const sections = [
     {
         title: 'Management',
         links: [
-            { label: 'Admin dashboard', href: '/admin/dashboard' },
-            { label: 'Activity log', href: '/admin/activity' },
-            { label: 'Users', href: '/admin/management/users' },
-            { label: 'Subadmins', href: '/admin/management/subadmins' },
-            { label: 'Roles & permissions', href: '/admin/management/roles' },
-            { label: 'Sitemap', href: '/admin/management/sitemap' },
+            { label: 'Admin dashboard', href: '/admin/dashboard', permission: 'dashboard.read' },
+            { label: 'Activity log', href: '/admin/activity', permission: 'audit.export' },
+            { label: 'Users', href: '/admin/management/users', permission: 'accounts.view' },
+            { label: 'Roles & permissions', href: '/admin/management/roles', permission: 'roles.view' },
+            { label: 'Sitemap', href: '/admin/management/sitemap', permission: 'system.settings.view' },
+            // Subadmins route/page is optional; keep hidden unless your app enables it.
+            { label: 'Subadmins', href: '/admin/management/subadmins', permission: 'accounts.update' },
         ],
     },
     {
         title: 'Personal',
         links: [
-            { label: 'My activity', href: '/activity' },
+            { label: 'My activity', href: '/account/settings/activity', permission: 'audit.view' },
         ],
     },
     {
         title: 'App',
         links: [
-            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Dashboard', href: '/dashboard', permission: 'dashboard.read' },
             { label: 'Home', href: '/' },
         ],
     },
-];
+].map((section) => ({
+    ...section,
+    links: (section.links as LinkItem[])
+        .filter((link) => !link.permission || hasPermission(link.permission))
+        .filter((link) => (link.href === '/admin/activity' ? roleSlug.value === 'super_admin' : true)),
+})).filter((section) => section.links.length > 0));
 </script>
 
 <template>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,8 +33,14 @@ class ActivityController extends Controller
         ]);
     }
 
-    public function all(Request $request): Response
+    public function all(Request $request): Response|RedirectResponse
     {
+        $user = $request->user();
+        if (! $user || ! $user->isAdmin()) {
+            // Non-admin roles can only view their own activity feed.
+            return redirect('/account/settings/activity');
+        }
+
         $logs = ActivityLog::with('user')
             ->orderByDesc('id')
             ->paginate(30)

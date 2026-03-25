@@ -15,6 +15,7 @@ type Role = {
     slug: string;
     route: string;
     is_default: boolean;
+    is_protected: boolean;
 };
 
 const props = defineProps<{
@@ -25,12 +26,27 @@ const page = usePage();
 const status = computed(
     () => (page.props.flash as { status?: string } | undefined)?.status,
 );
+const permissions = computed(() => (page.props.auth as { permissions?: string[] } | undefined)?.permissions ?? []);
+const hasPermission = (permission: string) =>
+    permissions.value.includes('*') || permissions.value.includes(permission);
+
+const canCreate = computed(() => hasPermission('roles.create'));
+const canDelete = computed(() => hasPermission('roles.delete'));
+const canViewPermissions = computed(() => hasPermission('permissions.view'));
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Management', href: '/admin/management' },
     { title: 'Roles & Permissions', href: '/admin/management/roles' },
 ];
+
+const canDeleteRole = (role: Role) => {
+    if (!canDelete.value) return false;
+    if (role.slug === 'super_admin') return false;
+    if (role.is_protected) return false;
+    if (role.is_default) return false;
+    return true;
+};
 </script>
 
 <template>
@@ -49,7 +65,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 description="Create roles, assign permissions, and pick the default login role."
             />
 
-            <section class="space-y-4 rounded-lg border p-4">
+            <section v-if="canCreate" class="space-y-4 rounded-lg border p-4">
                 <h3 class="font-medium">Create role</h3>
                 <Form
                     action="/admin/management/roles"
@@ -127,12 +143,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                                 <td class="px-4 py-3 text-right">
                                     <div class="flex flex-wrap justify-end gap-2">
                                         <Link
+                                            v-if="canViewPermissions"
                                             :href="`/admin/management/roles/${role.id}/permissions`"
                                             class="rounded border px-3 py-1 text-xs"
                                         >
                                             Permissions
                                         </Link>
                                         <Form
+                                            v-if="canDeleteRole(role)"
                                             :action="`/admin/management/roles/${role.id}`"
                                             method="post"
                                         >

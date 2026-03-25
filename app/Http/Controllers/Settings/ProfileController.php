@@ -46,15 +46,8 @@ class ProfileController extends Controller
      */
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
+        // Starter-kit safety: prevent self-deletion to avoid accidental lockout.
+        // Admin/user removals are handled from the admin management area.
+        return back()->with('status', 'Account deletion is disabled.');
     }
 }

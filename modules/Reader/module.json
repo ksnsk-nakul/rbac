@@ -1,0 +1,40 @@
+{
+  "name": "Reader",
+  "slug": "reader",
+  "version": "0.1.0",
+  "description": "Books, chapters, and a reader UI with an author workflow.",
+  "provider": "Modules\\\\Reader\\\\ReaderServiceProvider",
+  "default_enabled": false,
+  "requires_api_key": false,
+  "allowed_plans": ["growth", "enterprise"],
+  "roles": [
+    {
+      "name": "Author",
+      "slug": "author",
+      "route": "author",
+      "is_default": false,
+      "permissions": [
+        "reader.books.view",
+        "reader.books.create",
+        "reader.books.edit",
+        "reader.chapters.manage",
+        "reader.read"
+      ]
+    }
+  ],
+  "permissions": [
+    { "name": "View books", "slug": "reader.books.view", "group": "reader" },
+    { "name": "Create books", "slug": "reader.books.create", "group": "reader" },
+    { "name": "Edit books", "slug": "reader.books.edit", "group": "reader" },
+    { "name": "Delete books", "slug": "reader.books.delete", "group": "reader" },
+    { "name": "Manage chapters", "slug": "reader.chapters.manage", "group": "reader" },
+    { "name": "Read books", "slug": "reader.read", "group": "reader" },
+    { "name": "Submit for approval", "slug": "reader.approval.submit", "group": "reader" },
+    { "name": "View approvals", "slug": "reader.approvals.view", "group": "reader" },
+    { "name": "Manage approvals", "slug": "reader.approvals.manage", "group": "reader" }
+  ],
+  "navigation": [
+    { "title": "Books", "href": "/reader/books", "permission": "reader.books.view" },
+    { "title": "Book approvals", "href": "/admin/reader/approvals", "permission": "reader.approvals.view" }
+  ]
+}

@@ -15,8 +15,17 @@ class AuditExportController extends Controller
 
         $query = ActivityLog::query()->with('user');
 
+        $user = $request->user();
+        if (! $user || ! $user->isAdmin()) {
+            // Non-admin roles may only export their own activity logs.
+            $query->where('user_id', $user?->id);
+        }
+
         if ($request->filled('user')) {
-            $query->where('user_id', $request->input('user'));
+            // Ignore cross-user exports for non-admins.
+            if ($user && $user->isAdmin()) {
+                $query->where('user_id', $request->input('user'));
+            }
         }
 
         if ($request->filled('action')) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Account;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
+use App\Repositories\Contracts\SupportTicketRepositoryInterface;
 use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,16 +14,12 @@ use Inertia\Response;
 
 class SupportTicketController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, SupportTicketRepositoryInterface $ticketsRepo): Response
     {
         $user = $request->user();
-        $orgId = $user->current_organization_id;
 
-        $tickets = SupportTicket::query()
-            ->where('organization_id', $orgId)
-            ->where('user_id', $user->id)
-            ->latest('id')
-            ->get()
+        $tickets = $ticketsRepo
+            ->listForAccount($user, 200)
             ->map(fn (SupportTicket $t) => [
                 'id' => $t->id,
                 'subject' => $t->subject,
@@ -163,4 +160,3 @@ class SupportTicketController extends Controller
         return redirect()->route('account.settings.support.show', $ticket);
     }
 }
-

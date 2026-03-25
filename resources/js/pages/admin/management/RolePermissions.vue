@@ -16,6 +16,7 @@ type Role = {
     slug: string;
     route: string;
     is_default: boolean;
+    is_protected: boolean;
     permissions: Permission[];
 };
 
@@ -26,6 +27,14 @@ const props = defineProps<{
 
 const page = usePage();
 const status = computed(() => (page.props.flash as { status?: string } | undefined)?.status);
+const permissionsList = computed(() => (page.props.auth as { permissions?: string[] } | undefined)?.permissions ?? []);
+const hasPermission = (permission: string) =>
+    permissionsList.value.includes('*') || permissionsList.value.includes(permission);
+
+const canEditRole = computed(() => hasPermission('roles.edit') && props.role.slug !== 'super_admin');
+const canAssignPermissions = computed(() => hasPermission('permissions.assign') && props.role.slug !== 'super_admin');
+const isSuperAdmin = computed(() => props.role.slug === 'super_admin');
+const isProtected = computed(() => props.role.is_protected && props.role.slug !== 'super_admin');
 
 const grouped = computed(() => {
     const groups: Record<string, Permission[]> = {};
@@ -61,6 +70,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
             <section class="space-y-4 rounded-lg border p-4">
                 <h3 class="font-medium">Role details</h3>
+                <p v-if="isSuperAdmin" class="text-xs text-muted-foreground">
+                    Super Admin is a protected role. It cannot be edited or deleted, and it implicitly has all permissions.
+                </p>
+                <p v-else-if="isProtected" class="text-xs text-muted-foreground">
+                    This role is protected from deletion. You may still update its name/login route.
+                </p>
                 <Form
                     :action="`/admin/management/roles/${role.id}`"
                     method="post"
@@ -70,17 +85,17 @@ const breadcrumbs: BreadcrumbItem[] = [
                     <input type="hidden" name="_method" value="put" />
                     <div class="grid gap-2">
                         <Label for="name">Role name</Label>
-                        <Input id="name" name="name" :default-value="role.name" required />
+                        <Input id="name" name="name" :default-value="role.name" required :disabled="!canEditRole" />
                         <InputError :message="errors.name" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="slug">Role slug</Label>
-                        <Input id="slug" name="slug" :default-value="role.slug" required />
+                        <Input id="slug" name="slug" :default-value="role.slug" required :disabled="!canEditRole" />
                         <InputError :message="errors.slug" />
                     </div>
                     <div class="grid gap-2">
                         <Label for="route">Login route</Label>
-                        <Input id="route" name="route" :default-value="role.route" required />
+                        <Input id="route" name="route" :default-value="role.route" required :disabled="!canEditRole" />
                         <InputError :message="errors.route" />
                     </div>
                     <div class="flex items-center gap-2">
@@ -90,10 +105,11 @@ const breadcrumbs: BreadcrumbItem[] = [
                             type="checkbox"
                             value="1"
                             :checked="role.is_default"
+                            :disabled="!canEditRole"
                         />
                         <Label for="is_default">Default role</Label>
                     </div>
-                    <Button type="submit" :disabled="processing">Save role</Button>
+                    <Button type="submit" :disabled="processing || !canEditRole">Save role</Button>
                 </Form>
             </section>
 
@@ -119,13 +135,14 @@ const breadcrumbs: BreadcrumbItem[] = [
                                     name="permissions[]"
                                     :value="permission.id"
                                     :checked="role.permissions.some((p) => p.id === permission.id)"
+                                    :disabled="!canAssignPermissions"
                                 />
                                 {{ permission.name }}
                             </label>
                         </div>
                     </div>
                     <InputError :message="errors.permissions" />
-                    <Button type="submit" :disabled="processing">Save permissions</Button>
+                    <Button type="submit" :disabled="processing || !canAssignPermissions">Save permissions</Button>
                 </Form>
             </section>
         </div>

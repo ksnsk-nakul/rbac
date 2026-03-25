@@ -14,6 +14,12 @@ use Inertia\Response;
 
 class ApprovalController extends Controller
 {
+    private function roleIsProtected(Role $role): bool
+    {
+        // `super_admin` is always protected. Default role should also be protected from deletion.
+        return $role->slug === 'super_admin' || (bool) $role->is_default || (bool) $role->is_protected;
+    }
+
     public function index(): Response
     {
         $requests = ApprovalRequest::orderByDesc('id')
@@ -35,10 +41,33 @@ class ApprovalController extends Controller
 
     public function approve(Request $request, ApprovalRequest $approval): RedirectResponse
     {
+        $payload = $approval->payload ?? [];
+
+        if ($approval->type === 'role.create') {
+            if (($payload['slug'] ?? null) === 'super_admin') {
+                return back()->with('status', 'The super_admin role slug is reserved.');
+            }
+        }
+
+        if ($approval->type === 'role.update') {
+            $role = Role::find($payload['role_id'] ?? null);
+            if ($role && $this->roleIsProtected($role)) {
+                return back()->with('status', 'Protected roles cannot be modified.');
+            }
+        }
+
+        if ($approval->type === 'role.delete') {
+            $role = Role::find($payload['role_id'] ?? null);
+            if ($role && $this->roleIsProtected($role)) {
+                return back()->with('status', 'Protected roles cannot be deleted.');
+            }
+            if ($role && $role->users()->exists()) {
+                return back()->with('status', 'Role has users assigned and cannot be deleted.');
+            }
+        }
+
         $user = $request->user();
         ApprovalService::approve($approval, $user);
-
-        $payload = $approval->payload ?? [];
 
         if ($approval->type === 'role.create') {
             $role = Role::create([

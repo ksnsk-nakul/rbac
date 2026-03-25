@@ -82,6 +82,7 @@ class AddonInstaller
             version: $raw['version'] ?? null,
             description: $raw['description'] ?? null,
             provider: $raw['provider'] ?? null,
+            roles: $raw['roles'] ?? [],
             permissions: $raw['permissions'] ?? [],
             navigation: $raw['navigation'] ?? [],
             defaultEnabled: (bool) ($raw['default_enabled'] ?? false),
