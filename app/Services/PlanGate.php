@@ -23,6 +23,12 @@ class PlanGate
             return true;
         }
 
+        // Super admins should never be blocked by plan-gating inside the starter kit.
+        // Plan limits are meant for SaaS customers, not for the operator/admin of the system.
+        if ($user?->isAdmin()) {
+            return true;
+        }
+
         $plan = self::forUser($user);
 
         if (!$plan) {

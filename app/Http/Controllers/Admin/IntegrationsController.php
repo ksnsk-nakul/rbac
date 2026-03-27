@@ -59,9 +59,11 @@ class IntegrationsController extends Controller
     private function providers(): array
     {
         return [
-            'sms' => ['Twilio', 'MSG91', 'Coding Mantra', 'AWS SNS'],
-            'payment' => ['Stripe', 'Razorpay', 'PayPal'],
-            'mailer' => ['SMTP', 'Mailgun', 'Amazon SES'],
+            // Keep this starter kit focused: one payment provider (Razorpay),
+            // and generic Mailer/SMS fields that map to Laravel config/env.
+            'sms' => ['twilio', 'msg91', 'other'],
+            'payment' => ['razorpay'],
+            'mailer' => ['smtp'],
         ];
     }
 
@@ -69,28 +71,22 @@ class IntegrationsController extends Controller
     {
         return [
             ['group' => 'sms', 'key' => 'sms.provider'],
-            ['group' => 'sms', 'key' => 'sms.twilio_sid'],
-            ['group' => 'sms', 'key' => 'sms.twilio_token'],
-            ['group' => 'sms', 'key' => 'sms.msg91_key'],
-            ['group' => 'sms', 'key' => 'sms.coding_mantra_key'],
-            ['group' => 'sms', 'key' => 'sms.aws_sns_key'],
-            ['group' => 'sms', 'key' => 'sms.aws_sns_secret'],
+            ['group' => 'sms', 'key' => 'sms.api_key'],
+            ['group' => 'sms', 'key' => 'sms.sender_id'],
+
+            ['group' => 'mailer', 'key' => 'mailer.driver'],
+            ['group' => 'mailer', 'key' => 'mailer.host'],
+            ['group' => 'mailer', 'key' => 'mailer.port'],
+            ['group' => 'mailer', 'key' => 'mailer.username'],
+            ['group' => 'mailer', 'key' => 'mailer.password'],
+            ['group' => 'mailer', 'key' => 'mailer.encryption'],
+            ['group' => 'mailer', 'key' => 'mailer.from_address'],
+            ['group' => 'mailer', 'key' => 'mailer.from_name'],
+
             ['group' => 'payment', 'key' => 'payment.provider'],
-            ['group' => 'payment', 'key' => 'payment.stripe_key'],
-            ['group' => 'payment', 'key' => 'payment.stripe_secret'],
             ['group' => 'payment', 'key' => 'payment.razorpay_key'],
             ['group' => 'payment', 'key' => 'payment.razorpay_secret'],
             ['group' => 'payment', 'key' => 'payment.razorpay_webhook_secret'],
-            ['group' => 'payment', 'key' => 'payment.paypal_client_id'],
-            ['group' => 'payment', 'key' => 'payment.paypal_secret'],
-            ['group' => 'mailer', 'key' => 'mailer.provider'],
-            ['group' => 'mailer', 'key' => 'mailer.smtp_host'],
-            ['group' => 'mailer', 'key' => 'mailer.smtp_port'],
-            ['group' => 'mailer', 'key' => 'mailer.smtp_user'],
-            ['group' => 'mailer', 'key' => 'mailer.smtp_password'],
-            ['group' => 'mailer', 'key' => 'mailer.mailgun_key'],
-            ['group' => 'mailer', 'key' => 'mailer.ses_key'],
-            ['group' => 'mailer', 'key' => 'mailer.ses_secret'],
         ];
     }
 

@@ -46,28 +46,12 @@ const submit = () => {
                             </select>
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Twilio SID</span>
-                            <input v-model="form['sms.twilio_sid']" class="w-full rounded-md border px-3 py-2" />
+                            <span>API key</span>
+                            <input v-model="form['sms.api_key']" type="password" class="w-full rounded-md border px-3 py-2" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Twilio Token</span>
-                            <input v-model="form['sms.twilio_token']" type="password" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>MSG91 Key</span>
-                            <input v-model="form['sms.msg91_key']" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>Coding Mantra Key</span>
-                            <input v-model="form['sms.coding_mantra_key']" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>AWS SNS Key</span>
-                            <input v-model="form['sms.aws_sns_key']" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>AWS SNS Secret</span>
-                            <input v-model="form['sms.aws_sns_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
+                            <span>Sender ID</span>
+                            <input v-model="form['sms.sender_id']" class="w-full rounded-md border px-3 py-2" />
                         </label>
                     </div>
                 </section>
@@ -85,14 +69,6 @@ const submit = () => {
                             </select>
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Stripe Key</span>
-                            <input v-model="form['payment.stripe_key']" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>Stripe Secret</span>
-                            <input v-model="form['payment.stripe_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
                             <span>Razorpay Key</span>
                             <input v-model="form['payment.razorpay_key']" class="w-full rounded-md border px-3 py-2" />
                         </label>
@@ -104,14 +80,6 @@ const submit = () => {
                             <span>Razorpay Webhook Secret</span>
                             <input v-model="form['payment.razorpay_webhook_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
                         </label>
-                        <label class="space-y-1 text-sm">
-                            <span>PayPal Client ID</span>
-                            <input v-model="form['payment.paypal_client_id']" class="w-full rounded-md border px-3 py-2" />
-                        </label>
-                        <label class="space-y-1 text-sm">
-                            <span>PayPal Secret</span>
-                            <input v-model="form['payment.paypal_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
-                        </label>
                     </div>
                 </section>
 
@@ -119,41 +87,36 @@ const submit = () => {
                     <h2 class="text-lg font-medium">Mailer Providers</h2>
                     <div class="grid gap-3 md:grid-cols-2">
                         <label class="space-y-1 text-sm">
-                            <span>Provider</span>
-                            <select v-model="form['mailer.provider']" class="w-full rounded-md border px-3 py-2">
-                                <option value="">Select provider</option>
-                                <option v-for="provider in props.providers.mailer" :key="provider" :value="provider">
-                                    {{ provider }}
-                                </option>
-                            </select>
+                            <span>Driver</span>
+                            <input v-model="form['mailer.driver']" class="w-full rounded-md border px-3 py-2" placeholder="smtp" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>SMTP Host</span>
-                            <input v-model="form['mailer.smtp_host']" class="w-full rounded-md border px-3 py-2" />
+                            <span>Host</span>
+                            <input v-model="form['mailer.host']" class="w-full rounded-md border px-3 py-2" placeholder="smtp.example.com" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>SMTP Port</span>
-                            <input v-model="form['mailer.smtp_port']" class="w-full rounded-md border px-3 py-2" />
+                            <span>Port</span>
+                            <input v-model="form['mailer.port']" class="w-full rounded-md border px-3 py-2" placeholder="587" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>SMTP Username</span>
-                            <input v-model="form['mailer.smtp_user']" class="w-full rounded-md border px-3 py-2" />
+                            <span>Username</span>
+                            <input v-model="form['mailer.username']" class="w-full rounded-md border px-3 py-2" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>SMTP Password</span>
-                            <input v-model="form['mailer.smtp_password']" type="password" class="w-full rounded-md border px-3 py-2" />
+                            <span>Password</span>
+                            <input v-model="form['mailer.password']" type="password" class="w-full rounded-md border px-3 py-2" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Mailgun Key</span>
-                            <input v-model="form['mailer.mailgun_key']" type="password" class="w-full rounded-md border px-3 py-2" />
+                            <span>Encryption</span>
+                            <input v-model="form['mailer.encryption']" class="w-full rounded-md border px-3 py-2" placeholder="tls" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Amazon SES Key</span>
-                            <input v-model="form['mailer.ses_key']" class="w-full rounded-md border px-3 py-2" />
+                            <span>From address</span>
+                            <input v-model="form['mailer.from_address']" class="w-full rounded-md border px-3 py-2" placeholder="no-reply@example.com" />
                         </label>
                         <label class="space-y-1 text-sm">
-                            <span>Amazon SES Secret</span>
-                            <input v-model="form['mailer.ses_secret']" type="password" class="w-full rounded-md border px-3 py-2" />
+                            <span>From name</span>
+                            <input v-model="form['mailer.from_name']" class="w-full rounded-md border px-3 py-2" />
                         </label>
                     </div>
                 </section>

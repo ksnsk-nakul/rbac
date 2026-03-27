@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\ApprovalRequest;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\SupportTicket;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -73,11 +75,11 @@ class AdminDashboardController extends Controller
             : [];
 
         return Inertia::render('admin/Dashboard', [
-            'roles' => $roles,
-            'permissions' => $permissions,
             'usersCount' => $usersCount,
             'rolesCount' => Role::count(),
             'permissionsCount' => Permission::count(),
+            'pendingApprovalsCount' => ApprovalRequest::where('status', 'pending')->count(),
+            'openSupportTicketsCount' => SupportTicket::where('status', '!=', 'closed')->count(),
             'adminUsers' => $adminUsers,
             'canRoles' => $canRoles,
             'canUsers' => $canUsers,
